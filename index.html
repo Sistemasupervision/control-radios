@@ -3,78 +3,126 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Control de Radios</title>
+  <title>🔐 Iniciar Sesión | Control de Radios</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .radio { border: 1px solid #ccc; margin: 10px; padding: 10px; border-radius: 5px; }
-    .filtro { margin-bottom: 20px; }
-    input, select { padding: 6px; margin-right: 10px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+    .login-box {
+      background: rgba(0, 0, 0, 0.65);
+      padding: 40px;
+      width: 90%;
+      max-width: 420px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #4fc3f7;
+      font-size: 28px;
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #bbdefb;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 16px;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #0288d1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn:hover { background: #0277bd; }
+    .message {
+      text-align: center;
+      margin-top: 15px;
+      min-height: 22px;
+      color: #ffccbc;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
-  <h1>📡 Inventario de Radios</h1>
-
-  <div class="filtro">
-    <input type="text" id="search" placeholder="Buscar por serial o ID..." />
-    <select id="tipo">
-      <option value="">Todos los tipos</option>
-      <option value="Portátil Motorola">Portátil Motorola</option>
-      <option value="Portátil Hytera">Portátil Hytera</option>
-      <option value="Móvil Motorola">Móvil Motorola</option>
-    </select>
-    <button onclick="cargarRadios()">Filtrar</button>
+  <div class="login-box">
+    <h2>📡 Control de Radios</h2>
+    <div class="input-group">
+      <label for="email">Correo Electrónico</label>
+      <input type="email" id="email" placeholder="usuario@empresa.com" autocomplete="email" />
+    </div>
+    <div class="input-group">
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn" onclick="login()">Iniciar Sesión</button>
+    <div class="message" id="message"></div>
   </div>
-
-  <div id="radios"></div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // 🔑 Reemplaza con tus claves (las encuentras en Settings > API)
+    // 🔑 REEMPLAZA ESTOS VALORES
     const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    async function cargarRadios() {
-      const search = document.getElementById('search').value.trim().toLowerCase();
-      const tipo = document.getElementById('tipo').value;
+    async function login() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const msg = document.getElementById('message');
 
-      let query = supabase.from('radios').select('*').order('numero', { ascending: true });
-
-      if (tipo) query = query.eq('tipo_equipo', tipo);
-      if (search) {
-        query = query.or(`serial.ilike.%${search}%,codigo_id.ilike.%${search}%`);
+      if (!email || !password) {
+        msg.textContent = 'Por favor, completa todos los campos.';
+        return;
       }
 
-      const { data, error } = await query;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        console.error('Error:', error);
-        document.getElementById('radios').innerHTML = '<p>Error al cargar los datos.</p>';
-        return;
+        msg.textContent = error.message || 'Error al iniciar sesión.';
+        console.error('Login error:', error);
+      } else {
+        msg.textContent = 'Iniciando sesión...';
+        setTimeout(() => {
+          window.location.href = 'panel.html';
+        }, 800);
       }
-
-      const contenedor = document.getElementById('radios');
-      if (data.length === 0) {
-        contenedor.innerHTML = '<p>No se encontraron radios.</p>';
-        return;
-      }
-// Verificar autenticación
-const { data: { user }, error: authError } = await supabase.auth.getUser();
-if (!user) {
-  window.location.href = 'login.html';
-}
-      contenedor.innerHTML = data.map(r => `
-        <div class="radio">
-          <strong>${r.marca} ${r.modelo}</strong> | Serial: ${r.serial} | ID: ${r.codigo_id || '—'}<br>
-          Dependencia: ${r.dependencia || '—'} | Tipo: ${r.tipo_equipo}<br>
-          ${r.observaciones ? `Obs: ${r.observaciones}` : ''}
-        </div>
-      `).join('<hr>');
     }
 
-    // Cargar al inicio
-    cargarRadios();
+    // Si ya estás logeado, redirigir directamente
+    (async () => {
+      const {  { user } } = await supabase.auth.getUser();
+      if (user) {
+        window.location.href = 'panel.html';
+      }
+    })();
   </script>
 </body>
 </html>
