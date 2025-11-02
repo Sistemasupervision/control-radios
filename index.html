@@ -3,66 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🔐 Login | Control de Radios</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <title>Iniciar Sesión | Control de Radios</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
     body {
       background:
-        /* Circuito SVG embebido */
-        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%230a0e17'/%3E%3Cpath d='M20 20h10v10H20zM40 40h10v10H40zM60 60h10v10H60zM80 20h10v10H80z' fill='%237d2ae8' fill-opacity='0.1'/%3E%3Cpath d='M10 50l5-5 5 5-5 5-5-5z' fill='%2300f7ff' fill-opacity='0.05'/%3E%3C/svg%3E"),
-        #0a0e17;
-      color: #00f7ff;
-      font-family: 'Orbitron', monospace;
+        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%230d1b2a'/%3E%3Cpath d='M20 20h5v5H20zM40 50h3v3H40z' fill='%234895ef' fill-opacity='0.02'/%3E%3C/svg%3E"),
+        #0d1b2a;
+      color: #e0e1dd;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
-      position: relative;
-    }
-    body::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: radial-gradient(circle at 10% 20%, rgba(125, 42, 232, 0.1) 0%, transparent 40%),
-                  radial-gradient(circle at 90% 80%, rgba(0, 247, 255, 0.07) 0%, transparent 50%);
-      pointer-events: none;
+      padding: 20px;
     }
     .login-box {
-      background: rgba(10, 14, 23, 0.85);
-      border: 1px solid #7d2ae8;
+      background: #1b263b;
       border-radius: 12px;
-      padding: 40px;
-      width: 90%;
-      max-width: 420px;
-      box-shadow: 0 0 20px rgba(125, 42, 232, 0.5),
-                  0 0 40px rgba(0, 247, 255, 0.3);
-      position: relative;
-      z-index: 2;
+      padding: 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid #3e5f8a;
     }
-    .login-box::after {
-      content: "";
-      position: absolute;
-      top: -2px; left: -2px;
-      right: -2px; bottom: -2px;
-      background: linear-gradient(45deg, #7d2ae8, #00f7ff, #7d2ae8);
-      z-index: -1;
-      border-radius: 14px;
-      animation: shimmer 3s infinite linear;
-      opacity: 0.6;
-    }
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    h2 {
+    .logo {
       text-align: center;
-      margin-bottom: 30px;
-      font-size: 28px;
-      text-shadow: 0 0 10px #00f7ff, 0 0 20px #00f7ff;
-      letter-spacing: 1px;
+      margin-bottom: 28px;
+    }
+    .logo h1 {
+      font-weight: 600;
+      font-size: 24px;
+      color: #e0e1dd;
+    }
+    .logo p {
+      font-size: 14px;
+      color: #8791a3;
+      margin-top: 6px;
     }
     .input-group {
       margin-bottom: 20px;
@@ -71,60 +53,62 @@
       display: block;
       margin-bottom: 8px;
       font-size: 14px;
-      color: #a0a0ff;
+      font-weight: 500;
+      color: #cbd2d9;
     }
     .input-group input {
       width: 100%;
       padding: 12px;
-      background: rgba(0, 5, 15, 0.6);
-      border: 1px solid #00f7ff;
+      background: #253248;
+      border: 1px solid #3e5f8a;
       border-radius: 6px;
-      color: #00f7ff;
-      font-family: 'Orbitron', monospace;
-      font-size: 16px;
-      outline: none;
+      color: #e0e1dd;
+      font-size: 15px;
     }
     .input-group input:focus {
-      box-shadow: 0 0 10px #00f7ff;
+      outline: none;
+      border-color: #4895ef;
+      box-shadow: 0 0 0 2px rgba(72, 149, 239, 0.2);
     }
     .btn {
       width: 100%;
       padding: 12px;
-      background: linear-gradient(45deg, #7d2ae8, #5a1fc9);
+      background: #4895ef;
       color: white;
       border: none;
       border-radius: 6px;
-      font-family: 'Orbitron', monospace;
+      font-weight: 600;
       font-size: 16px;
-      font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: background 0.2s;
     }
     .btn:hover {
-      background: linear-gradient(45deg, #00f7ff, #7d2ae8);
-      box-shadow: 0 0 15px #00f7ff;
+      background: #3a7bc8;
     }
     .message {
       text-align: center;
-      margin-top: 15px;
-      min-height: 22px;
-      color: #ff6b6b;
+      margin-top: 16px;
+      min-height: 20px;
       font-size: 14px;
+      color: #ff6b6b;
     }
   </style>
 </head>
 <body>
   <div class="login-box">
-    <h2>[ INICIAR SESIÓN ]</h2>
-    <div class="input-group">
-      <label for="email">EMAIL</label>
-      <input type="email" id="email" placeholder="admin@radios.com" autocomplete="email" />
+    <div class="logo">
+      <h1>Control de Radios</h1>
+      <p>Sistema institucional • Seguro y confiable</p>
     </div>
     <div class="input-group">
-      <label for="password">CONTRASEÑA</label>
+      <label for="email">Correo institucional</label>
+      <input type="email" id="email" placeholder="nombre@institucion.gob" autocomplete="email" />
+    </div>
+    <div class="input-group">
+      <label for="password">Contraseña</label>
       <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
     </div>
-    <button class="btn" onclick="login()">ACCEDER</button>
+    <button class="btn" onclick="login()">Iniciar sesión</button>
     <div class="message" id="message"></div>
   </div>
 
@@ -141,21 +125,22 @@
       const msg = document.getElementById('message');
 
       if (!email || !password) {
-        msg.textContent = 'CAMPOS REQUERIDOS';
+        msg.textContent = 'Por favor, complete todos los campos.';
         return;
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        msg.textContent = 'ACCESO DENEGADO';
-        setTimeout(() => msg.textContent = '', 3000);
+        msg.textContent = 'Credenciales incorrectas o cuenta inactiva.';
+        setTimeout(() => msg.textContent = '', 4000);
       } else {
-        msg.textContent = 'ACCESO CONCEDIDO...';
+        msg.textContent = 'Accediendo al sistema...';
         setTimeout(() => window.location.href = 'panel.html', 1000);
       }
     }
 
+    // Redirigir si ya está autenticado
     (async () => {
       const {  { user } } = await supabase.auth.getUser();
       if (user) window.location.href = 'panel.html';
