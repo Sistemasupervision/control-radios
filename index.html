@@ -13,8 +13,9 @@
       font-family: 'Roboto', sans-serif;
     }
     body {
+      /* Fondo de placa base (PCB) en azul tecnológico suave */
       background:
-        url("image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%23ffffff'/%3E%3Cpath d='M10 20h5v3H10zM30 50h4v2H30zM70 30h3v3H70z' fill='%230d47a1' fill-opacity='0.04'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%231976d2' stroke-width='0.8' stroke-opacity='0.15'%3E%3Cpath d='M0 0L20 20M20 0L0 20'/%3E%3Ccircle cx='60' cy='60' r='3'/%3E%3Cpath d='M40 10L80 10 80 110 40 110Z'/%3E%3Cpath d='M10 30L20 40 10 50'/%3E%3Cpath d='M100 70L110 80 100 90'/%3E%3C/g%3E%3C/svg%3E"),
         #ffffff;
       color: #0d47a1;
       min-height: 100vh;
@@ -29,29 +30,18 @@
       padding: 40px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 6px 20px rgba(13, 71, 161, 0.12);
-      border: 1px solid #bbdefb;
+      box-shadow: 0 6px 25px rgba(13, 71, 161, 0.15);
+      border: 1px solid #e0e0e0;
     }
     .logo-container {
       text-align: center;
       margin-bottom: 24px;
     }
-    .logo {
-      width: 80px;
-      height: 80px;
-      background-color: #e3f2fd;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .logo-img {
+      max-width: 100px;
+      max-height: 100px;
       margin-bottom: 16px;
-      color: #0d47a1;
-      font-weight: bold;
-      font-size: 28px;
-      /* Aquí puedes reemplazar con: <img src="tu-logo.png" alt="Logo" width="80" /> */
-    }
-    .logo-placeholder {
-      font-size: 32px;
+      border-radius: 4px;
     }
     .title {
       font-size: 24px;
@@ -114,8 +104,8 @@
 <body>
   <div class="login-box">
     <div class="logo-container">
-      <!-- 🔷 Reemplaza este div por tu logo real -->
-      <div class="logo logo-placeholder">👮</div>
+      <!-- 🔷 Coloca tu logo en la raíz del proyecto y llámalo "logo.png" -->
+      <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
       <h1 class="title">Control de Radios</h1>
       <p class="subtitle">Sistema para control de radios del Cuerpo de Policía Nacional Bolivariana</p>
     </div>
