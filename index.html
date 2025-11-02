@@ -13,9 +13,9 @@
       font-family: 'Roboto', sans-serif;
     }
     body {
-      /* Fondo de placa base (PCB) en azul tecnológico suave */
+      /* Fondo de pistas de circuito (PCB) en azul tecnológico */
       background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%231976d2' stroke-width='0.8' stroke-opacity='0.15'%3E%3Cpath d='M0 0L20 20M20 0L0 20'/%3E%3Ccircle cx='60' cy='60' r='3'/%3E%3Cpath d='M40 10L80 10 80 110 40 110Z'/%3E%3Cpath d='M10 30L20 40 10 50'/%3E%3Cpath d='M100 70L110 80 100 90'/%3E%3C/g%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%231976d2' stroke-width='1' stroke-opacity='0.12'%3E%3Cpath d='M20 20L50 20L50 50'/%3E%3Cpath d='M100 30L170 30'/%3E%3Cpath d='M30 100L30 170'/%3E%3Ccircle cx='60' cy='60' r='4'/%3E%3Ccircle cx='150' cy='150' r='3'/%3E%3Cpath d='M120 80L140 80 140 100 120 100Z'/%3E%3Cpath d='M70 130L90 130' stroke='%230d47a1' stroke-opacity='0.08'/%3E%3C/g%3E%3C/svg%3E"),
         #ffffff;
       color: #0d47a1;
       min-height: 100vh;
@@ -26,11 +26,11 @@
     }
     .login-box {
       background: #ffffff;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 40px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 6px 25px rgba(13, 71, 161, 0.15);
+      box-shadow: 0 8px 30px rgba(13, 71, 161, 0.18);
       border: 1px solid #e0e0e0;
     }
     .logo-container {
@@ -39,9 +39,9 @@
     }
     .logo-img {
       max-width: 100px;
-      max-height: 100px;
+      height: auto;
       margin-bottom: 16px;
-      border-radius: 4px;
+      display: inline-block;
     }
     .title {
       font-size: 24px;
@@ -68,14 +68,14 @@
       width: 100%;
       padding: 12px;
       border: 1px solid #90a4ae;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 15px;
       color: #263238;
     }
     .input-group input:focus {
       outline: none;
       border-color: #1976d2;
-      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.25);
     }
     .btn {
       width: 100%;
@@ -83,7 +83,7 @@
       background: #1976d2;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       font-weight: 600;
       font-size: 16px;
       cursor: pointer;
@@ -104,7 +104,7 @@
 <body>
   <div class="login-box">
     <div class="logo-container">
-      <!-- 🔷 Coloca tu logo en la raíz del proyecto y llámalo "logo.png" -->
+      <!-- 🖼️ Tu logo debe llamarse "logo.png" y estar en la misma carpeta -->
       <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
       <h1 class="title">Control de Radios</h1>
       <p class="subtitle">Sistema para control de radios del Cuerpo de Policía Nacional Bolivariana</p>
@@ -125,6 +125,7 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // 🔑 Tus credenciales de Supabase
     const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -150,6 +151,7 @@
       }
     }
 
+    // Redirigir si ya está autenticado
     (async () => {
       const {  { user } } = await supabase.auth.getUser();
       if (user) window.location.href = 'panel.html';
