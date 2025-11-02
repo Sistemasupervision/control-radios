@@ -4,19 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Iniciar Sesión | Control de Radios</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Roboto', sans-serif;
     }
     body {
       background:
-        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%230d1b2a'/%3E%3Cpath d='M20 20h5v5H20zM40 50h3v3H40z' fill='%234895ef' fill-opacity='0.02'/%3E%3C/svg%3E"),
-        #0d1b2a;
-      color: #e0e1dd;
+        url("image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%23ffffff'/%3E%3Cpath d='M10 20h5v3H10zM30 50h4v2H30zM70 30h3v3H70z' fill='%230d47a1' fill-opacity='0.04'/%3E%3C/svg%3E"),
+        #ffffff;
+      color: #0d47a1;
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -24,27 +24,45 @@
       padding: 20px;
     }
     .login-box {
-      background: #1b263b;
+      background: #ffffff;
       border-radius: 12px;
-      padding: 36px;
+      padding: 40px;
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-      border: 1px solid #3e5f8a;
+      max-width: 420px;
+      box-shadow: 0 6px 20px rgba(13, 71, 161, 0.12);
+      border: 1px solid #bbdefb;
+    }
+    .logo-container {
+      text-align: center;
+      margin-bottom: 24px;
     }
     .logo {
-      text-align: center;
-      margin-bottom: 28px;
+      width: 80px;
+      height: 80px;
+      background-color: #e3f2fd;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      color: #0d47a1;
+      font-weight: bold;
+      font-size: 28px;
+      /* Aquí puedes reemplazar con: <img src="tu-logo.png" alt="Logo" width="80" /> */
     }
-    .logo h1 {
-      font-weight: 600;
+    .logo-placeholder {
+      font-size: 32px;
+    }
+    .title {
       font-size: 24px;
-      color: #e0e1dd;
+      font-weight: 700;
+      color: #0d47a1;
+      margin-bottom: 8px;
     }
-    .logo p {
+    .subtitle {
       font-size: 14px;
-      color: #8791a3;
-      margin-top: 6px;
+      color: #546e7a;
+      line-height: 1.4;
     }
     .input-group {
       margin-bottom: 20px;
@@ -54,26 +72,25 @@
       margin-bottom: 8px;
       font-size: 14px;
       font-weight: 500;
-      color: #cbd2d9;
+      color: #37474f;
     }
     .input-group input {
       width: 100%;
       padding: 12px;
-      background: #253248;
-      border: 1px solid #3e5f8a;
+      border: 1px solid #90a4ae;
       border-radius: 6px;
-      color: #e0e1dd;
       font-size: 15px;
+      color: #263238;
     }
     .input-group input:focus {
       outline: none;
-      border-color: #4895ef;
-      box-shadow: 0 0 0 2px rgba(72, 149, 239, 0.2);
+      border-color: #1976d2;
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
     }
     .btn {
       width: 100%;
       padding: 12px;
-      background: #4895ef;
+      background: #1976d2;
       color: white;
       border: none;
       border-radius: 6px;
@@ -83,26 +100,29 @@
       transition: background 0.2s;
     }
     .btn:hover {
-      background: #3a7bc8;
+      background: #1565c0;
     }
     .message {
       text-align: center;
       margin-top: 16px;
       min-height: 20px;
       font-size: 14px;
-      color: #ff6b6b;
+      color: #d32f2f;
     }
   </style>
 </head>
 <body>
   <div class="login-box">
-    <div class="logo">
-      <h1>Control de Radios</h1>
-      <p>Sistema institucional • Seguro y confiable</p>
+    <div class="logo-container">
+      <!-- 🔷 Reemplaza este div por tu logo real -->
+      <div class="logo logo-placeholder">👮</div>
+      <h1 class="title">Control de Radios</h1>
+      <p class="subtitle">Sistema para control de radios del Cuerpo de Policía Nacional Bolivariana</p>
     </div>
+
     <div class="input-group">
       <label for="email">Correo institucional</label>
-      <input type="email" id="email" placeholder="nombre@institucion.gob" autocomplete="email" />
+      <input type="email" id="email" placeholder="usuario@policia.gob.ve" autocomplete="email" />
     </div>
     <div class="input-group">
       <label for="password">Contraseña</label>
@@ -140,7 +160,6 @@
       }
     }
 
-    // Redirigir si ya está autenticado
     (async () => {
       const {  { user } } = await supabase.auth.getUser();
       if (user) window.location.href = 'panel.html';
