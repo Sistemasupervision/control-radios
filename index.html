@@ -13,9 +13,9 @@
       font-family: 'Roboto', sans-serif;
     }
     body {
-      /* Fondo de pistas de placa base (PCB) en azul suave */
+      /* Fondo de pistas de circuito de placa base (PCB) */
       background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%231976d2' stroke-width='1' stroke-opacity='0.12'%3E%3Cpath d='M20 20L50 20 50 50'/%3E%3Cpath d='M100 30L170 30'/%3E%3Cpath d='M30 100L30 170'/%3E%3Ccircle cx='60' cy='60' r='4'/%3E%3Ccircle cx='150' cy='150' r='3'/%3E%3Cpath d='M120 80L140 80 140 100 120 100Z'/%3E%3Cpath d='M70 130L90 130' stroke='%230d47a1' stroke-opacity='0.08'/%3E%3C/g%3E%3C/svg%3E"),
+        url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%231976d2' stroke-width='1' stroke-opacity='0.12'%3E%3Cpath d='M20 20L50 20 50 50'/%3E%3Cpath d='M100 30L170 30'/%3E%3Cpath d='M30 100L30 170'/%3E%3Ccircle cx='60' cy='60' r='4'/%3E%3Ccircle cx='150' cy='150' r='3'/%3E%3Cpath d='M120 80L140 80 140 100 120 100Z'/%3E%3Cpath d='M70 130L90 130' stroke='%230d47a1' stroke-opacity='0.08'/%3E%3C/g%3E%3C/svg%3E"),
         #ffffff;
       color: #0d47a1;
       min-height: 100vh;
@@ -55,6 +55,7 @@
       font-size: 14px;
       color: #546e7a;
       line-height: 1.4;
+      margin-bottom: 24px;
     }
     .input-group {
       margin-bottom: 20px;
@@ -101,13 +102,24 @@
       font-size: 14px;
       color: #d32f2f;
     }
+
+    /* Texto de contacto y copyright */
+    .footer-text {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .footer-text p {
+      margin: 4px 0;
+    }
   </style>
 </head>
 <body>
   <div class="login-box">
     <div class="logo-container">
-      <!-- 🖼️ TU LOGO DEBE LLAMARSE "logo.png" y estar en la misma carpeta -->
-      <img src="logo.png" alt="Logo CPNB" class="logo-img">
+      <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
       <h1 class="title">Control de Radios</h1>
       <p class="subtitle">Sistema para control de radios del Cuerpo de Policía Nacional Bolivariana</p>
     </div>
@@ -122,6 +134,12 @@
     </div>
     <button class="btn" onclick="login()">Iniciar sesión</button>
     <div class="message" id="message"></div>
+
+    <!-- 🔹 Texto solicitado -->
+    <div class="footer-text">
+      <p>Para solicitar usuario comuníquese con OTIC ZULIA</p>
+      <p>© Todos los derechos reservados</p>
+    </div>
   </div>
 
   <script type="module">
