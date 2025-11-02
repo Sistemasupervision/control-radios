@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Control de Radios</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .radio { border: 1px solid #ccc; margin: 10px; padding: 10px; border-radius: 5px; }
+    .filtro { margin-bottom: 20px; }
+    input, select { padding: 6px; margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <h1>📡 Inventario de Radios</h1>
+
+  <div class="filtro">
+    <input type="text" id="search" placeholder="Buscar por serial o ID..." />
+    <select id="tipo">
+      <option value="">Todos los tipos</option>
+      <option value="Portátil Motorola">Portátil Motorola</option>
+      <option value="Portátil Hytera">Portátil Hytera</option>
+      <option value="Móvil Motorola">Móvil Motorola</option>
+    </select>
+    <button onclick="cargarRadios()">Filtrar</button>
+  </div>
+
+  <div id="radios"></div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // 🔑 Reemplaza con tus claves (las encuentras en Settings > API)
+    const supabaseUrl = 'https://TU_PROYECTO.supabase.co';
+    const supabaseAnonKey = 'TU_ANON_KEY';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    async function cargarRadios() {
+      const search = document.getElementById('search').value.trim().toLowerCase();
+      const tipo = document.getElementById('tipo').value;
+
+      let query = supabase.from('radios').select('*').order('numero', { ascending: true });
+
+      if (tipo) query = query.eq('tipo_equipo', tipo);
+      if (search) {
+        query = query.or(`serial.ilike.%${search}%,codigo_id.ilike.%${search}%`);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error:', error);
+        document.getElementById('radios').innerHTML = '<p>Error al cargar los datos.</p>';
+        return;
+      }
+
+      const contenedor = document.getElementById('radios');
+      if (data.length === 0) {
+        contenedor.innerHTML = '<p>No se encontraron radios.</p>';
+        return;
+      }
+
+      contenedor.innerHTML = data.map(r => `
+        <div class="radio">
+          <strong>${r.marca} ${r.modelo}</strong> | Serial: ${r.serial} | ID: ${r.codigo_id || '—'}<br>
+          Dependencia: ${r.dependencia || '—'} | Tipo: ${r.tipo_equipo}<br>
+          ${r.observaciones ? `Obs: ${r.observaciones}` : ''}
+        </div>
+      `).join('<hr>');
+    }
+
+    // Cargar al inicio
+    cargarRadios();
+  </script>
+</body>
+</html>
