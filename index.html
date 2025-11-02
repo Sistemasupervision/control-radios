@@ -102,7 +102,6 @@
       color: #d32f2f;
     }
 
-    /* Texto de contacto y copyright */
     .footer-text {
       margin-top: 24px;
       text-align: center;
@@ -118,7 +117,6 @@
 <body>
   <div class="login-box">
     <div class="logo-container">
-      <!-- 🖼️ TU LOGO DEBE LLAMARSE "logo.png" y estar en la misma carpeta -->
       <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
       <h1 class="title">Control de Radios</h1>
       <p class="subtitle">Sistema para control de radios del Cuerpo de Policía Nacional Bolivariana</p>
@@ -135,7 +133,6 @@
     <button class="btn" onclick="login()">Iniciar sesión</button>
     <div class="message" id="message"></div>
 
-    <!-- 🔹 Texto solicitado -->
     <div class="footer-text">
       <p>Para solicitar usuario comuníquese con OTIC ZULIA</p>
       <p>© Todos los derechos reservados</p>
@@ -159,20 +156,28 @@
         return;
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        msg.textContent = 'Credenciales incorrectas o cuenta inactiva.';
-        setTimeout(() => msg.textContent = '', 4000);
-      } else {
-        msg.textContent = 'Accediendo al sistema...';
-        setTimeout(() => window.location.href = 'panel.html', 1000);
+        if (error) {
+          msg.textContent = 'Credenciales incorrectas o cuenta inactiva.';
+          setTimeout(() => msg.textContent = '', 4000);
+        } else {
+          msg.textContent = 'Accediendo al sistema...';
+          setTimeout(() => window.location.href = 'panel.html', 1000);
+        }
+      } catch (err) {
+        msg.textContent = 'Error inesperado. Intente más tarde.';
+        console.error('Login error:', err);
       }
     }
 
+    // Verificar si ya está logueado
     (async () => {
       const {  { user } } = await supabase.auth.getUser();
-      if (user) window.location.href = 'panel.html';
+      if (user) {
+        window.location.href = 'panel.html';
+      }
     })();
   </script>
 </body>
