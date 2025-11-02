@@ -59,7 +59,11 @@
         contenedor.innerHTML = '<p>No se encontraron radios.</p>';
         return;
       }
-
+// Verificar autenticación
+const { data: { user }, error: authError } = await supabase.auth.getUser();
+if (!user) {
+  window.location.href = 'login.html';
+}
       contenedor.innerHTML = data.map(r => `
         <div class="radio">
           <strong>${r.marca} ${r.modelo}</strong> | Serial: ${r.serial} | ID: ${r.codigo_id || '—'}<br>
