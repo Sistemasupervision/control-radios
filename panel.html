@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Iniciar Sesión | Control de Radios</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <title>Panel | Control de Radios</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -18,127 +18,224 @@
       background-position: right top;
       background-repeat: no-repeat;
       color: #0d47a1;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       padding: 20px;
+      min-height: 100vh;
     }
-    .login-box {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 14px;
-      padding: 40px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 8px 30px rgba(13, 71, 161, 0.18);
-      border: 1px solid #e0e0e0;
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
-    .logo-container {
-      text-align: center;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .logout-btn {
+      background: #d32f2f;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
       margin-bottom: 24px;
     }
-    .logo-img {
-      max-width: 120px;
-      height: auto;
+    .tab {
+      padding: 12px 24px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #90a4ae;
+      border-bottom: 3px solid transparent;
+    }
+    .tab.active {
+      color: #1976d2;
+      border-bottom: 3px solid #1976d2;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .form-group {
       margin-bottom: 16px;
+    }
+    .form-group label {
       display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .title {
-      font-size: 24px;
-      font-weight: 700;
-      color: #0d47a1;
-      margin-bottom: 8px;
-    }
-    .subtitle {
-      font-size: 14px;
-      color: #546e7a;
-      line-height: 1.4;
-    }
-    .input-group {
-      margin-bottom: 20px;
-    }
-    .input-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
+      margin-bottom: 6px;
       font-weight: 500;
       color: #37474f;
     }
-    .input-group input {
+    .form-group input,
+    .form-group select {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       border: 1px solid #90a4ae;
-      border-radius: 8px;
+      border-radius: 6px;
       font-size: 15px;
       color: #263238;
     }
-    .input-group input:focus {
-      outline: none;
-      border-color: #1976d2;
-      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.25);
-    }
     .btn {
-      width: 100%;
-      padding: 12px;
       background: #1976d2;
       color: white;
       border: none;
-      border-radius: 8px;
+      padding: 10px 20px;
+      border-radius: 6px;
       font-weight: 600;
-      font-size: 16px;
       cursor: pointer;
-      transition: background 0.2s;
+      font-size: 15px;
     }
     .btn:hover {
       background: #1565c0;
     }
-    .message {
-      text-align: center;
-      margin-top: 16px;
-      min-height: 20px;
-      font-size: 14px;
-      color: #d32f2f;
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
     }
-
-    /* Texto de contacto y copyright */
-    .footer-text {
-      margin-top: 24px;
-      text-align: center;
-      font-size: 13px;
-      color: #666;
+    .filters input,
+    .filters select {
+      min-width: 200px;
+    }
+    .radio-card {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .radio-card p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid #e0e0e0;
+      margin: 16px 0;
+    }
+    .info-section p {
+      margin: 12px 0;
       line-height: 1.5;
     }
-    .footer-text p {
-      margin: 4px 0;
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #90a4ae;
+    }
+    .message {
+      padding: 10px;
+      margin: 12px 0;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .message.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .message.error {
+      background: #ffebee;
+      color: #c62828;
     }
   </style>
 </head>
 <body>
-  <div class="login-box">
-    <div class="logo-container">
-      <!-- 🖼️ TU LOGO DEBE LLAMARSE "logo.png" y estar en la misma carpeta -->
-      <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
-      <h1 class="title">Control de Radios</h1>
-      <p class="subtitle">Sistema para control de radios del Cuerpo de Policía Nacional Bolivariana</p>
+  <div class="container">
+    <div class="header">
+      <h1>Control de Radios – CPNB</h1>
+      <button class="logout-btn" onclick="logout()">Salir</button>
     </div>
 
-    <div class="input-group">
-      <label for="email">Correo institucional</label>
-      <input type="email" id="email" placeholder="usuario@policia.gob.ve" autocomplete="email" />
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="consulta">Consulta</div>
+      <div class="tab" data-tab="registro">Registro</div>
+      <div class="tab" data-tab="informacion">Información</div>
     </div>
-    <div class="input-group">
-      <label for="password">Contraseña</label>
-      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
-    </div>
-    <button class="btn" onclick="login()">Iniciar sesión</button>
-    <div class="message" id="message"></div>
 
-    <!-- 🔹 Texto solicitado -->
-    <div class="footer-text">
-      <p>Para solicitar usuario comuníquese con OTIC ZULIA</p>
-      <p>© Todos los derechos reservados</p>
+    <!-- Contenido: Consulta -->
+    <div id="consulta" class="tab-content active">
+      <div class="filters">
+        <input type="text" id="search" placeholder="Buscar por serial, ID o dependencia..." oninput="loadRadios()" />
+        <select id="tipo" onchange="loadRadios()">
+          <option value="">Todos los tipos</option>
+          <option value="Portátil Motorola">Portátil Motorola</option>
+          <option value="Portátil Hytera">Portátil Hytera</option>
+          <option value="Móvil Motorola">Móvil Motorola</option>
+        </select>
+      </div>
+      <div id="radios-list"></div>
+    </div>
+
+    <!-- Contenido: Registro -->
+    <div id="registro" class="tab-content">
+      <div id="registro-message"></div>
+      <div class="form-group">
+        <label for="reg_marca">Marca *</label>
+        <select id="reg_marca" required>
+          <option value="">Seleccione</option>
+          <option value="MOTOROLA">MOTOROLA</option>
+          <option value="HYTERA">HYTERA</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="reg_modelo">Modelo *</label>
+        <input type="text" id="reg_modelo" placeholder="Ej: MTP850" required />
+      </div>
+      <div class="form-group">
+        <label for="reg_serial">Serial *</label>
+        <input type="text" id="reg_serial" placeholder="Único" required />
+      </div>
+      <div class="form-group">
+        <label for="reg_codigo_id">Código ID</label>
+        <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123" />
+      </div>
+      <div class="form-group">
+        <label for="reg_dependencia">Dependencia</label>
+        <input type="text" id="reg_dependencia" placeholder="Ej: OTIC ZULIA" />
+      </div>
+      <div class="form-group">
+        <label for="reg_observaciones">Observaciones</label>
+        <input type="text" id="reg_observaciones" placeholder="Ej: TIPO C" />
+      </div>
+      <div class="form-group">
+        <label for="reg_tipo_equipo">Tipo de equipo *</label>
+        <select id="reg_tipo_equipo" required>
+          <option value="">Seleccione</option>
+          <option value="Portátil Motorola">Portátil Motorola</option>
+          <option value="Portátil Hytera">Portátil Hytera</option>
+          <option value="Móvil Motorola">Móvil Motorola</option>
+        </select>
+      </div>
+      <button class="btn" onclick="registerRadio()">Registrar Radio</button>
+    </div>
+
+    <!-- Contenido: Información -->
+    <div id="informacion" class="tab-content">
+      <div class="info-section">
+        <h2 style="margin-bottom: 16px; color: #1976d2;">Sistema de Control de Radios</h2>
+        <p>Este sistema permite gestionar el inventario de equipos de comunicación del Cuerpo de Policía Nacional Bolivariana.</p>
+        <p><strong>Unidades registradas:</strong> Radios portátiles Motorola MTP850, portátiles Hytera y móviles Motorola.</p>
+        <p><strong>Soporte técnico:</strong> OTIC ZULIA</p>
+        <p><strong>Última actualización:</strong> Noviembre 2025</p>
+        <hr>
+        <p><small>© Todos los derechos reservados – Cuerpo de Policía Nacional Bolivariana</small></p>
+      </div>
     </div>
   </div>
 
@@ -149,31 +246,125 @@
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    async function login() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const msg = document.getElementById('message');
+    // Verificar autenticación
+    (async () => {
+      const {  { user } } = await supabase.auth.getUser();
+      if (!user) window.location.href = 'index.html';
+    })();
 
-      if (!email || !password) {
-        msg.textContent = 'Por favor, complete todos los campos.';
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.getAttribute('data-tab');
+        document.getElementById(target).classList.add('active');
+        if (target === 'consulta') loadRadios();
+      });
+    });
+
+    // Cargar radios
+    async function loadRadios() {
+      const search = document.getElementById('search').value.trim().toLowerCase();
+      const tipo = document.getElementById('tipo').value;
+
+      let query = supabase
+        .from('radios')
+        .select('*')
+        .order('numero', { ascending: true });
+
+      if (tipo) query = query.eq('tipo_equipo', tipo);
+      if (search) {
+        query = query.or(`serial.ilike.%${search}%,codigo_id.ilike.%${search}%,dependencia.ilike.%${search}%`);
+      }
+
+      const { data, error } = await query;
+      const container = document.getElementById('radios-list');
+      if (error) {
+        container.innerHTML = '<p style="color:#d32f2f;">Error al cargar los datos.</p>';
         return;
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      container.innerHTML = data.length === 0
+        ? '<p>No se encontraron radios.</p>'
+        : data.map(r => `
+          <div class="radio-card">
+            <p><strong>${r.marca} ${r.modelo}</strong> — N° ${r.numero}</p>
+            <p>	Serial: <strong>${r.serial}</strong></p>
+            <p>	ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
+            <p>	Tipo: ${r.tipo_equipo}${r.observaciones ? ` • Obs: ${r.observaciones}` : ''}</p>
+          </div>
+        `).join('<hr>');
+    }
+
+    // Registrar nuevo radio
+    async function registerRadio() {
+      const marca = document.getElementById('reg_marca').value;
+      const modelo = document.getElementById('reg_modelo').value;
+      const serial = document.getElementById('reg_serial').value;
+      const codigo_id = document.getElementById('reg_codigo_id').value || null;
+      const dependencia = document.getElementById('reg_dependencia').value || null;
+      const observaciones = document.getElementById('reg_observaciones').value || null;
+      const tipo_equipo = document.getElementById('reg_tipo_equipo').value;
+
+      const msgDiv = document.getElementById('registro-message');
+
+      if (!marca || !modelo || !serial || !tipo_equipo) {
+        msgDiv.innerHTML = '<div class="message error">Todos los campos con * son obligatorios.</div>';
+        return;
+      }
+
+      // Obtener siguiente número (máximo actual + 1 por tipo)
+      const {  maxData, error: maxErr } = await supabase
+        .from('radios')
+        .select('numero', { count: 'exact' })
+        .eq('tipo_equipo', tipo_equipo)
+        .order('numero', { ascending: false })
+        .limit(1);
+
+      const nextNumero = maxData && maxData.length > 0 ? maxData[0].numero + 1 : 1;
+
+      const { data, error } = await supabase
+        .from('radios')
+        .insert([
+          {
+            numero: nextNumero,
+            marca,
+            modelo,
+            serial,
+            codigo_id,
+            dependencia,
+            observaciones,
+            tipo_equipo
+          }
+        ])
+        .select();
 
       if (error) {
-        msg.textContent = 'Credenciales incorrectas o cuenta inactiva.';
-        setTimeout(() => msg.textContent = '', 4000);
+        msgDiv.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
       } else {
-        msg.textContent = 'Accediendo al sistema...';
-        setTimeout(() => window.location.href = 'panel.html', 1000);
+        msgDiv.innerHTML = `<div class="message success">✅ Radio registrado exitosamente.</div>`;
+        // Limpiar formulario
+        document.getElementById('reg_marca').value = '';
+        document.getElementById('reg_modelo').value = '';
+        document.getElementById('reg_serial').value = '';
+        document.getElementById('reg_codigo_id').value = '';
+        document.getElementById('reg_dependencia').value = '';
+        document.getElementById('reg_observaciones').value = '';
+        document.getElementById('reg_tipo_equipo').value = '';
+        setTimeout(() => msgDiv.innerHTML = '', 4000);
       }
     }
 
-    (async () => {
-      const {  { user } } = await supabase.auth.getUser();
-      if (user) window.location.href = 'panel.html';
-    })();
+    // Cerrar sesión
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    // Cargar inicialmente
+    loadRadios();
   </script>
 </body>
 </html>
