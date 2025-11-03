@@ -193,48 +193,60 @@
       <div class="radio-list" id="radioList"></div>
     </div>
 
-    <!-- Contenido: Registro -->
-    <div id="registro" class="tab-content">
-      <div id="registro-message"></div>
-      <div class="form-group">
-        <label for="reg_marca">Marca *</label>
-        <select id="reg_marca" required>
-          <option value="">Seleccione</option>
-          <option value="MOTOROLA">MOTOROLA</option>
-          <option value="HYTERA">HYTERA</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="reg_modelo">Modelo *</label>
-        <input type="text" id="reg_modelo" placeholder="Ej: MTP850" required />
-      </div>
-      <div class="form-group">
-        <label for="reg_serial">Serial *</label>
-        <input type="text" id="reg_serial" placeholder="Único" required />
-      </div>
-      <div class="form-group">
-        <label for="reg_codigo_id">Código ID</label>
-        <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123" />
-      </div>
-      <div class="form-group">
-        <label for="reg_dependencia">Dependencia</label>
-        <input type="text" id="reg_dependencia" placeholder="Ej: OTIC ZULIA" />
-      </div>
-      <div class="form-group">
-        <label for="reg_observaciones">Observaciones</label>
-        <input type="text" id="reg_observaciones" placeholder="Ej: TIPO C" />
-      </div>
-      <div class="form-group">
-        <label for="reg_tipo_equipo">Tipo de equipo *</label>
-        <select id="reg_tipo_equipo" required>
-          <option value="">Seleccione</option>
-          <option value="Portátil Motorola">Portátil Motorola</option>
-          <option value="Portátil Hytera">Portátil Hytera</option>
-          <option value="Móvil Motorola">Móvil Motorola</option>
-        </select>
-      </div>
-      <button class="btn" id="registerBtn">Registrar Radio</button>
-    </div>
+  <!-- Contenido: Registro -->
+<div id="registro" class="tab-content">
+  <div id="registro-message"></div>
+  <div class="form-group">
+    <label for="reg_marca">Marca *</label>
+    <select id="reg_marca" required>
+      <option value="">Seleccione</option>
+      <option value="MOTOROLA">MOTOROLA</option>
+      <option value="HYTERA">HYTERA</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="reg_modelo">Modelo *</label>
+    <input type="text" id="reg_modelo" placeholder="Ej: MTP850 o PT58H F3" required />
+  </div>
+  <div class="form-group">
+    <label for="reg_serial">Serial *</label>
+    <input type="text" id="reg_serial" placeholder="Único" required />
+  </div>
+  <div class="form-group">
+    <label for="reg_codigo_id">Código ID</label>
+    <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123" />
+  </div>
+  <div class="form-group">
+    <label for="reg_dependencia">Dependencia</label>
+    <input type="text" id="reg_dependencia" placeholder="Ej: OTIC ZULIA" />
+  </div>
+  <div class="form-group">
+    <label for="reg_observaciones">Observaciones</label>
+    <input type="text" id="reg_observaciones" placeholder="Ej: TIPO C" />
+  </div>
+  <div class="form-group">
+    <label for="reg_tipo_equipo">Tipo de equipo *</label>
+    <select id="reg_tipo_equipo" required>
+      <option value="">Seleccione</option>
+      <option value="Portátil Motorola">Portátil Motorola</option>
+      <option value="Portátil Hytera">Portátil Hytera</option>
+      <option value="Móvil Motorola">Móvil Motorola</option>
+      <option value="Móvil Hytera">Móvil Hytera</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="reg_status">Estado *</label>
+    <select id="reg_status" required>
+      <option value="Operativo">Operativo</option>
+      <option value="Inoperativo">Inoperativo</option>
+    </select>
+  </div>
+  <div class="form-group" id="motivoGroup" style="display:none;">
+    <label for="reg_motivo">Motivo (si es inoperativo)</label>
+    <input type="text" id="reg_motivo" placeholder="Ej: Batería dañada, sin reparar, etc." />
+  </div>
+  <button class="btn" id="registerBtn">Registrar Radio</button>
+</div>
 
     <!-- Contenido: Información -->
     <div id="informacion" class="tab-content">
@@ -300,53 +312,75 @@
       `).join('');
     }
 
-    // Registrar nuevo radio
-    async function registerRadio() {
-      const marca = document.getElementById('reg_marca').value;
-      const modelo = document.getElementById('reg_modelo').value;
-      const serial = document.getElementById('reg_serial').value;
-      const codigo_id = document.getElementById('reg_codigo_id').value || null;
-      const dependencia = document.getElementById('reg_dependencia').value || null;
-      const observaciones = document.getElementById('reg_observaciones').value || null;
-      const tipo_equipo = document.getElementById('reg_tipo_equipo').value;
+  async function registerRadio() {
+  const marca = document.getElementById('reg_marca').value;
+  const modelo = document.getElementById('reg_modelo').value;
+  const serial = document.getElementById('reg_serial').value;
+  const codigo_id = document.getElementById('reg_codigo_id').value || null;
+  const dependencia = document.getElementById('reg_dependencia').value || null;
+  const observaciones = document.getElementById('reg_observaciones').value || null;
+  const tipo_equipo = document.getElementById('reg_tipo_equipo').value;
+  const status = document.getElementById('reg_status').value;
+  const motivo_inoperativo = status === 'Inoperativo' 
+    ? (document.getElementById('reg_motivo').value || null) 
+    : null;
 
-      const msgDiv = document.getElementById('registro-message');
+  const msg = document.getElementById('registro-message');
+  if (!marca || !modelo || !serial || !tipo_equipo || !status) {
+    msg.innerHTML = '<div class="message error">Campos con * obligatorios.</div>';
+    return;
+  }
 
-      if (!marca || !modelo || !serial || !tipo_equipo) {
-        msgDiv.innerHTML = '<div class="message error">Todos los campos con * son obligatorios.</div>';
-        return;
-      }
+  // Validar que si es inoperativo, se pida motivo (opcional, pero recomendado)
+  if (status === 'Inoperativo' && !motivo_inoperativo) {
+    msg.innerHTML = '<div class="message error">Por favor, indique el motivo de inoperatividad.</div>';
+    return;
+  }
 
-      // Obtener siguiente número por tipo
-      const { data: existing } = await supabase
-        .from('radios')
-        .select('numero', { count: 'exact' })
-        .eq('tipo_equipo', tipo_equipo)
-        .order('numero', { ascending: false })
-        .limit(1);
+  // Obtener siguiente número por tipo
+  const { data: radios } = await supabase
+    .from('radios')
+    .select('numero')
+    .eq('tipo_equipo', tipo_equipo)
+    .order('numero', { ascending: false })
+    .limit(1);
 
-      const nextNumero = existing && existing.length > 0 ? existing[0].numero + 1 : 1;
+  const nextNumero = radios.length > 0 ? radios[0].numero + 1 : 1;
 
-      const { error } = await supabase
-        .from('radios')
-        .insert([{ numero: nextNumero, marca, modelo, serial, codigo_id, dependencia, observaciones, tipo_equipo }]);
+  const { error } = await supabase
+    .from('radios')
+    .insert([{ 
+      numero: nextNumero, 
+      marca, 
+      modelo, 
+      serial, 
+      codigo_id, 
+      dependencia, 
+      observaciones, 
+      tipo_equipo,
+      status,
+      motivo_inoperativo
+    }]);
 
-      if (error) {
-        msgDiv.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
-      } else {
-        msgDiv.innerHTML = `<div class="message success">✅ Radio registrado exitosamente.</div>`;
-        // Reset form
-        document.getElementById('reg_marca').value = '';
-        document.getElementById('reg_modelo').value = '';
-        document.getElementById('reg_serial').value = '';
-        document.getElementById('reg_codigo_id').value = '';
-        document.getElementById('reg_dependencia').value = '';
-        document.getElementById('reg_observaciones').value = '';
-        document.getElementById('reg_tipo_equipo').value = '';
-        setTimeout(() => msgDiv.innerHTML = '', 4000);
-        loadRadios(); // Recargar lista
-      }
-    }
+  if (error) {
+    msg.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+  } else {
+    msg.innerHTML = '<div class="message success">✅ Registrado correctamente.</div>';
+    // Reset
+    document.getElementById('reg_marca').value = '';
+    document.getElementById('reg_modelo').value = '';
+    document.getElementById('reg_serial').value = '';
+    document.getElementById('reg_codigo_id').value = '';
+    document.getElementById('reg_dependencia').value = '';
+    document.getElementById('reg_observaciones').value = '';
+    document.getElementById('reg_tipo_equipo').value = '';
+    document.getElementById('reg_status').value = 'Operativo';
+    document.getElementById('reg_motivo').value = '';
+    document.getElementById('motivoGroup').style.display = 'none';
+    setTimeout(() => msg.innerHTML = '', 4000);
+    loadRadios(); // recargar lista
+  }
+}
 
     // Cerrar sesión
     async function logout() {
@@ -369,9 +403,31 @@
     // Eventos
     document.getElementById('registerBtn').addEventListener('click', registerRadio);
     document.getElementById('logoutBtn').addEventListener('click', logout);
-
-    // Cargar inicialmente
-    loadRadios();
+// Mostrar/ocultar campo de motivo
+document.getElementById('reg_status').addEventListener('change', () => {
+  const motivoGroup = document.getElementById('motivoGroup');
+  if (document.getElementById('reg_status').value === 'Inoperativo') {
+    motivoGroup.style.display = 'block';
+  } else {
+    motivoGroup.style.display = 'none';
+    document.getElementById('reg_motivo').value = '';
+  }
+});
+    list.innerHTML = data.map(r => `
+  <div class="radio-item">
+    <div class="radio-info">
+      <p><span class="radio-id">#${r.numero} • ${r.marca} ${r.modelo}</span></p>
+      <p class="radio-serial">Serial: ${r.serial}</p>
+      <p>ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
+      <p><strong>Status:</strong> ${r.status} ${r.motivo_inoperativo ? `– ${r.motivo_inoperativo}` : ''}</p>
+    </div>
+    <div class="radio-meta">
+      <p>${r.tipo_equipo}</p>
+      ${r.observaciones ? `<p>Obs: ${r.observaciones}</p>` : ''}
+      <p style="font-size:11px; color:#999;">${new Date(r.created_at).toLocaleString('es-VE')}</p>
+    </div>
+  </div>
+`).join('');
   </script>
 </body>
 </html>
