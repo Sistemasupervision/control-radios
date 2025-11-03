@@ -94,6 +94,15 @@
       background: white;
       box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
     }
+
+    /* Estilos adicionales para estadísticas */
+    .stat-card {
+      background: #f8fbff;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid #e1eaf4;
+    }
   </style>
 </head>
 <body>
@@ -111,8 +120,47 @@
       <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
       <a href="informacion.html" class="tab-link">ℹ️ Información</a>
     </div>
-    <div style="text-align: center; color: #666; font-size: 15px;">
-      <p>Seleccione una opción para continuar</p>
+
+    <!-- Estadísticas dinámicas -->
+    <div id="stats-container" style="margin-top: 20px;">
+      <h2 style="text-align: center; margin-bottom: 20px; color: #0d47a1; font-weight: 600;">📊 Estadísticas Generales</h2>
+      <div id="loading" style="text-align: center; color: #555;">Cargando estadísticas...</div>
+      <div id="stats-content" style="display: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-top: 16px;">
+        <div class="stat-card">
+          <h3 style="font-size: 16px; color: #37474f; margin-bottom: 8px;">Total de Radios</h3>
+          <p id="total-general" style="font-size: 28px; font-weight: 700; color: #1976d2;">—</p>
+        </div>
+        <div class="stat-card">
+          <h3 style="font-size: 16px; color: #37474f; margin-bottom: 8px;">Operativos</h3>
+          <p id="total-operativos" style="font-size: 28px; font-weight: 700; color: #2e7d32;">—</p>
+        </div>
+        <div class="stat-card">
+          <h3 style="font-size: 16px; color: #37474f; margin-bottom: 8px;">Inoperativos</h3>
+          <p id="total-inoperativos" style="font-size: 28px; font-weight: 700; color: #d32f2f;">—</p>
+        </div>
+        <div class="stat-card">
+          <h3 style="font-size: 16px; color: #37474f; margin-bottom: 8px;">Extraviados</h3>
+          <p id="total-extraviados" style="font-size: 28px; font-weight: 700; color: #f57c00;">—</p>
+        </div>
+      </div>
+
+      <h3 style="text-align: center; margin-top: 32px; margin-bottom: 16px; color: #0d47a1;">🔍 Desglose por Tipo</h3>
+      <div id="detail-content" style="display: none; margin-top: 16px;">
+        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+          <thead>
+            <tr style="background: #e3f2fd; color: #0d47a1;">
+              <th style="padding: 12px; text-align: left;">Tipo</th>
+              <th style="padding: 12px; text-align: center;">Operativos</th>
+              <th style="padding: 12px; text-align: center;">Inoperativos</th>
+              <th style="padding: 12px; text-align: center;">Extraviados</th>
+              <th style="padding: 12px; text-align: center;">Total</th>
+            </tr>
+          </thead>
+          <tbody id="detail-body">
+            <!-- Se llenará con JavaScript -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -122,23 +170,81 @@
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Verificar autenticación
+    // Verificar autenticación y cargar estadísticas
     (async () => {
       try {
         const { data } = await supabase.auth.getUser();
-        if (!data.user) window.location.href = 'index.html';
+        if (!data.user) {
+          window.location.href = 'index.html';
+        } else {
+          await cargarEstadisticas();
+        }
       } catch (err) {
+        console.error('Error de autenticación:', err);
         window.location.href = 'index.html';
       }
     })();
 
-    // Salir
+    // Función para cargar estadísticas desde Supabase
+    async function cargarEstadisticas() {
+      const loading = document.getElementById('loading');
+      const statsContent = document.getElementById('stats-content');
+      const detailContent = document.getElementById('detail-content');
+      const tbody = document.getElementById('detail-body');
+
+      try {
+        const { data: radios, error } = await supabase
+          .from('radios')
+          .select('tipo, estado');
+
+        if (error) throw error;
+
+        const total = radios.length;
+        const operativos = radios.filter(r => r.estado === 'Operativo').length;
+        const inoperativos = radios.filter(r => r.estado === 'Inoperativo').length;
+        const extraviados = radios.filter(r => r.estado === 'Extraviado').length;
+
+        document.getElementById('total-general').textContent = total;
+        document.getElementById('total-operativos').textContent = operativos;
+        document.getElementById('total-inoperativos').textContent = inoperativos;
+        document.getElementById('total-extraviados').textContent = extraviados;
+
+        const tipos = ['Portátil Motorola', 'Portátil Hytera', 'Móvil Motorola', 'Móvil Hytera'];
+        const filas = tipos.map(tipo => {
+          const items = radios.filter(r => r.tipo === tipo);
+          const op = items.filter(i => i.estado === 'Operativo').length;
+          const inop = items.filter(i => i.estado === 'Inoperativo').length;
+          const ext = items.filter(i => i.estado === 'Extraviado').length;
+          const tot = items.length;
+          return `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 12px; font-weight: 500;">${tipo}</td>
+              <td style="padding: 12px; text-align: center; color: #2e7d32;">${op}</td>
+              <td style="padding: 12px; text-align: center; color: #d32f2f;">${inop}</td>
+              <td style="padding: 12px; text-align: center; color: #f57c00;">${ext}</td>
+              <td style="padding: 12px; text-align: center; font-weight: 600;">${tot}</td>
+            </tr>
+          `;
+        }).join('');
+
+        tbody.innerHTML = filas;
+        loading.style.display = 'none';
+        statsContent.style.display = 'grid';
+        detailContent.style.display = 'block';
+
+      } catch (err) {
+        console.error('Error al cargar estadísticas:', err);
+        loading.textContent = '⚠️ No se pudieron cargar las estadísticas.';
+      }
+    }
+
+    // Botón de salir
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
-    // Resaltar pestaña activa según la URL
+    // Resaltar pestaña activa
     const currentPage = window.location.pathname.split('/').pop();
     document.querySelectorAll('.tab-link').forEach(link => {
       const href = link.getAttribute('href');
