@@ -66,6 +66,21 @@
     .logout-btn:hover {
       background: #b71c1c;
     }
+    .panel-btn {
+      background: #1976d2;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: background 0.2s;
+      text-align: center;
+    }
+    .panel-btn:hover {
+      background: #1565c0;
+    }
     .tabs {
       display: flex;
       justify-content: center;
@@ -95,12 +110,11 @@
       box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
     }
 
-    /* Estilos del formulario */
+    /* Formulario */
     .form-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 20px;
-      margin-top: 20px;
     }
     .form-group {
       margin-bottom: 20px;
@@ -140,13 +154,9 @@
     .btn:hover {
       background: #1565c0;
     }
-    .btn:disabled {
-      background: #90a4ae;
-      cursor: not-allowed;
-    }
     .message {
       text-align: center;
-      margin-top: 16px;
+      margin-top: 20px;
       min-height: 24px;
       font-size: 15px;
       font-weight: 500;
@@ -170,27 +180,18 @@
   </style>
 </head>
 <body>
-  <div class="header">
-  <div class="header-left">
-    <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
-    <h1>Control de Radios – CPNB</h1>
-  </div>
-  <div style="display: flex; gap: 10px; align-items: center;">
-    <a href="panel.html" class="logout-btn" style="
-      background: #1976d2;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 14px;
-    ">📊 Panel</a>
-    <button class="logout-btn" id="logoutBtn">Salir</button>
-  </div>
-</div>
-      <button class="logout-btn" id="logoutBtn">Salir</button>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
+        <h1>Control de Radios – CPNB</h1>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="panel.html" class="panel-btn">📊 Panel</a>
+        <button class="logout-btn" id="logoutBtn">Salir</button>
+      </div>
     </div>
 
-    <!-- Pestañas (igual que en panel.html) -->
     <div class="tabs">
       <a href="consulta.html" class="tab-link">🔍 Consulta</a>
       <a href="registro.html" class="tab-link active">➕ Registro</a>
@@ -198,10 +199,8 @@
       <a href="informacion.html" class="tab-link">ℹ️ Información</a>
     </div>
 
-    <!-- Formulario de registro -->
     <div class="form-container">
       <form id="registroForm">
-
         <div class="form-group">
           <label for="marca">Marca *</label>
           <select id="marca" class="form-control" required>
@@ -213,7 +212,7 @@
 
         <div class="form-group">
           <label for="modelo">Modelo *</label>
-          <input type="text" id="modelo" class="form-control" placeholder="Ej: MTP850, PD785" required maxlength="50">
+          <input type="text" id="modelo" class="form-control" placeholder="Ej: MTP850" required maxlength="50">
         </div>
 
         <div class="form-group">
@@ -266,13 +265,12 @@
 
         <div id="motivoExtraviado" class="form-group conditional-field">
           <label for="motivo_extraviado">Motivo (Extraviado)</label>
-          <textarea id="motivo_extraviado" class="form-control" rows="2" placeholder="Ej: Robo durante operativo"></textarea>
+          <textarea id="motivo_extraviado" class="form-control" rows="2" placeholder="Ej: Robo en operativo"></textarea>
         </div>
 
         <div class="form-group" style="grid-column: span 2;">
-          <button type="submit" class="btn" id="submitBtn">Registrar Radio</button>
+          <button type="submit" class="btn">Registrar Radio</button>
         </div>
-
       </form>
     </div>
 
@@ -295,109 +293,70 @@
       }
     })();
 
-    // Salir
+    // Botón de salir
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
-    // Resaltar pestaña activa según la URL
+    // Resaltar pestaña activa
     const currentPage = window.location.pathname.split('/').pop();
     document.querySelectorAll('.tab-link').forEach(link => {
-      const href = link.getAttribute('href');
-      if (href === currentPage) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
+      link.classList.toggle('active', link.getAttribute('href') === currentPage);
     });
 
-    // --- Validación en tiempo real ---
-
+    // --- Validaciones ---
     const serialInput = document.getElementById('serial');
     const codigoInput = document.getElementById('codigo_id');
     const serialError = document.getElementById('serial-error');
     const codigoError = document.getElementById('codigo-error');
 
-    // Forzar mayúsculas en serial
     serialInput.addEventListener('input', () => {
       serialInput.value = serialInput.value.toUpperCase();
     });
 
-    // Solo números en Código ID
     codigoInput.addEventListener('input', () => {
       codigoInput.value = codigoInput.value.replace(/\D/g, '').slice(0, 8);
     });
 
-    // Verificar unicidad de serial
-    async function checkSerial() {
-      const val = serialInput.value.trim();
-      serialError.style.display = 'none';
-      serialInput.classList.remove('invalid');
-
-      if (val === '') return true;
-
+    async function checkUnique(field, value) {
+      if (!value) return true;
       const { data, error } = await supabase
         .from('radios')
-        .select('serial', { count: 'exact' })
-        .eq('serial', val)
+        .select(field, { count: 'exact' })
+        .eq(field, value)
         .single();
-
-      if (error && error.code !== 'PGRST116') {
-        showMessage('Error al verificar serial', 'error');
-        return false;
-      }
-
-      const exists = data !== null;
-      if (exists) {
-        serialError.textContent = '⚠️ Este número de serie ya está registrado.';
-        serialError.style.display = 'block';
-        serialInput.classList.add('invalid');
-        return false;
-      }
-      return true;
+      return !(data !== null);
     }
 
-    // Verificar unicidad de código ID
-    async function checkCodigoId() {
-      const val = codigoInput.value.trim();
-      codigoError.style.display = 'none';
-      codigoInput.classList.remove('invalid');
-
-      if (val === '') return true;
-
-      const { data, error } = await supabase
-        .from('radios')
-        .select('codigo_id', { count: 'exact' })
-        .eq('codigo_id', val)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        showMessage('Error al verificar Código ID', 'error');
-        return false;
-      }
-
-      const exists = data !== null;
-      if (exists) {
-        codigoError.textContent = '⚠️ Este Código ID ya está en uso.';
-        codigoError.style.display = 'block';
-        codigoInput.classList.add('invalid');
-        return false;
-      }
-      return true;
-    }
-
-    serialInput.addEventListener('blur', checkSerial);
-    codigoInput.addEventListener('blur', checkCodigoId);
-
-    // Mostrar mensaje general
     function showMessage(text, type = '') {
       const el = document.getElementById('message');
       el.textContent = text;
       el.className = 'message ' + type;
     }
 
-    // Cambiar estado → mostrar motivos
+    serialInput.addEventListener('blur', async () => {
+      const val = serialInput.value.trim();
+      serialError.style.display = 'none';
+      serialInput.classList.remove('invalid');
+      if (val && !(await checkUnique('serial', val))) {
+        serialError.textContent = '⚠️ Este número de serie ya está registrado.';
+        serialError.style.display = 'block';
+        serialInput.classList.add('invalid');
+      }
+    });
+
+    codigoInput.addEventListener('blur', async () => {
+      const val = codigoInput.value.trim();
+      codigoError.style.display = 'none';
+      codigoInput.classList.remove('invalid');
+      if (val && !(await checkUnique('codigo_id', val))) {
+        codigoError.textContent = '⚠️ Este Código ID ya está en uso.';
+        codigoError.style.display = 'block';
+        codigoInput.classList.add('invalid');
+      }
+    });
+
     const statusSelect = document.getElementById('status');
     const motivoInop = document.getElementById('motivoInoperativo');
     const motivoExtr = document.getElementById('motivoExtraviado');
@@ -407,7 +366,6 @@
       motivoExtr.style.display = statusSelect.value === 'Extraviado' ? 'block' : 'none';
     });
 
-    // Enviar formulario
     document.getElementById('registroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       showMessage('');
@@ -428,11 +386,11 @@
         return;
       }
 
-      const serialOk = await checkSerial();
-      const codigoOk = await checkCodigoId();
+      const serialOk = await checkUnique('serial', serial);
+      const codigoOk = await checkUnique('codigo_id', codigo_id);
 
       if (!serialOk || !codigoOk) {
-        showMessage('⚠️ Corrija los campos resaltados.', 'error');
+        showMessage('⚠️ Corrija los campos marcados en rojo.', 'error');
         return;
       }
 
