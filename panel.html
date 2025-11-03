@@ -340,24 +340,33 @@
         return;
       }
 
-      // Doble verificación de unicidad
-      if (serial) {
-        const {  { serial: s } } = await supabase.from('radios').select('serial').eq('serial', serial).single();
-        if (s) {
-          document.getElementById('serial-message').textContent = '¡Este serial ya se encuentra registrado!';
-          document.getElementById('serial-message').style.color = '#d32f2f';
-          return;
-        }
+      // ✅ Verificar duplicados antes de insertar
+      const { data: serialData, error: serialErr } = await supabase
+        .from('radios')
+        .select('serial')
+        .eq('serial', serial)
+        .single();
+      
+      if (!serialErr) {
+        document.getElementById('serial-message').textContent = '¡Este serial ya se encuentra registrado!';
+        document.getElementById('serial-message').style.color = '#d32f2f';
+        return;
       }
+
       if (codigo_id) {
-        const {  { codigo_id: c } } = await supabase.from('radios').select('codigo_id').eq('codigo_id', codigo_id).single();
-        if (c) {
+        const { data: idData, error: idErr } = await supabase
+          .from('radios')
+          .select('codigo_id')
+          .eq('codigo_id', codigo_id)
+          .single();
+        if (!idErr) {
           document.getElementById('id-message').textContent = '¡Este Código ID ya está en uso!';
           document.getElementById('id-message').style.color = '#d32f2f';
           return;
         }
       }
 
+      // Obtener siguiente número por tipo
       const { data: radios } = await supabase
         .from('radios')
         .select('numero')
@@ -414,59 +423,31 @@
       }
     });
 
-   // Validación en tiempo real – CORREGIDO
-let serialTimeout = null;
-let idTimeout = null;
+    // ✅ Validación en tiempo real – CORREGIDA
+    let serialTimeout = null;
+    let idTimeout = null;
 
-document.getElementById('reg_serial').addEventListener('input', function () {
-  const serial = this.value.trim();
-  const msgDiv = document.getElementById('serial-message');
-  msgDiv.textContent = '';
-  if (!serial) return;
-  if (serialTimeout) clearTimeout(serialTimeout);
-  serialTimeout = setTimeout(async () => {
-    const { data, error } = await supabase
-      .from('radios')
-      .select('serial')
-      .eq('serial', serial)
-      .single(); // single() lanza error si no encuentra → usamos error.code
-
-    if (error && error.code === 'PGRST116') {
-      // No encontrado → disponible
-      msgDiv.textContent = '✅ Disponible';
-      msgDiv.style.color = '#2e7d32';
-    } else if (data) {
-      // Encontrado
-      msgDiv.textContent = '¡Este serial ya se encuentra registrado!';
-      msgDiv.style.color = '#d32f2f';
-    } else {
-      msgDiv.textContent = 'Error al verificar.';
-    }
-  }, 500);
-});
-
-document.getElementById('reg_codigo_id').addEventListener('input', function () {
-  const id = this.value.trim();
-  const msgDiv = document.getElementById('id-message');
-  msgDiv.textContent = '';
-  if (!id) return;
-  if (idTimeout) clearTimeout(idTimeout);
-  idTimeout = setTimeout(async () => {
-const { data: serialData, error: serialError } = await supabase
-  .from('radios')
-  .select('serial')
-  .eq('serial', serial)
-  .single();
-if (!(serialError && serialError.code === 'PGRST116')) {
-  document.getElementById('serial-message').textContent = '¡Este serial ya se encuentra registrado!';
-  document.getElementById('serial-message').style.color = '#d32f2f';
-  return;
-}
-    } else {
-      msgDiv.textContent = 'Error al verificar.';
-    }
-  }, 500);
-});
+    document.getElementById('reg_serial').addEventListener('input', function () {
+      const serial = this.value.trim();
+      const msgDiv = document.getElementById('serial-message');
+      msgDiv.textContent = '';
+      if (!serial) return;
+      if (serialTimeout) clearTimeout(serialTimeout);
+      serialTimeout = setTimeout(async () => {
+        const { data, error } = await supabase
+          .from('radios')
+          .select('serial')
+          .eq('serial', serial)
+          .single();
+        if (error && error.code === 'PGRST116') {
+          msgDiv.textContent = '✅ Disponible';
+          msgDiv.style.color = '#2e7d32';
+        } else if (data) {
+          msgDiv.textContent = '¡Este serial ya se encuentra registrado!';
+          msgDiv.style.color = '#d32f2f';
+        }
+      }, 500);
+    });
 
     document.getElementById('reg_codigo_id').addEventListener('input', function () {
       const id = this.value.trim();
@@ -475,13 +456,17 @@ if (!(serialError && serialError.code === 'PGRST116')) {
       if (!id) return;
       if (idTimeout) clearTimeout(idTimeout);
       idTimeout = setTimeout(async () => {
-        const {  { codigo_id: found } } = await supabase.from('radios').select('codigo_id').eq('codigo_id', id).single();
-        if (found) {
-          msgDiv.textContent = '¡Este Código ID ya está en uso!';
-          msgDiv.style.color = '#d32f2f';
-        } else {
+        const { data, error } = await supabase
+          .from('radios')
+          .select('codigo_id')
+          .eq('codigo_id', id)
+          .single();
+        if (error && error.code === 'PGRST116') {
           msgDiv.textContent = '✅ Disponible';
           msgDiv.style.color = '#2e7d32';
+        } else if (data) {
+          msgDiv.textContent = '¡Este Código ID ya está en uso!';
+          msgDiv.style.color = '#d32f2f';
         }
       }, 500);
     });
