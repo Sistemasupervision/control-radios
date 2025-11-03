@@ -24,22 +24,48 @@
     .container {
       max-width: 1000px;
       margin: 0 auto;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
     }
     .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #e0e0e0;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo-img {
+      max-width: 100px;
+      margin-bottom: 16px;
+      display: inline-block;
     }
     .header h1 {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 600;
+      color: #0d47a1;
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 14px;
+      color: #546e7a;
+    }
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .search-bar input,
+    .search-bar select {
+      padding: 12px;
+      border: 1px solid #90a4ae;
+      border-radius: 8px;
+      font-size: 15px;
+      color: #263238;
+      min-width: 200px;
+      flex: 1;
+    }
+    .search-bar select {
+      min-width: 160px;
     }
     .logout-btn {
       background: #d32f2f;
@@ -49,104 +75,53 @@
       border-radius: 6px;
       cursor: pointer;
       font-weight: 500;
+      margin-top: 10px;
     }
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid #e0e0e0;
-      margin-bottom: 24px;
-    }
-    .tab {
-      padding: 12px 24px;
-      cursor: pointer;
-      font-weight: 600;
-      color: #90a4ae;
-      border-bottom: 3px solid transparent;
-    }
-    .tab.active {
-      color: #1976d2;
-      border-bottom: 3px solid #1976d2;
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    .form-group {
+    .results-count {
+      font-size: 14px;
+      color: #546e7a;
       margin-bottom: 16px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
       font-weight: 500;
-      color: #37474f;
     }
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #90a4ae;
-      border-radius: 6px;
-      font-size: 15px;
-      color: #263238;
-    }
-    .btn {
-      background: #1976d2;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 15px;
-    }
-    .btn:hover {
-      background: #1565c0;
-    }
-    .filters {
+    .radio-list {
       display: flex;
+      flex-direction: column;
       gap: 12px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
     }
-    .filters input,
-    .filters select {
-      min-width: 200px;
-    }
-    .radio-card {
+    .radio-item {
       background: #f8f9fa;
       border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 12px;
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
     }
-    .radio-card p {
+    .radio-info {
+      flex: 1;
+    }
+    .radio-info p {
       margin: 4px 0;
       font-size: 14px;
     }
-    hr {
-      border: 0;
-      border-top: 1px solid #e0e0e0;
-      margin: 16px 0;
+    .radio-id {
+      font-weight: 600;
+      color: #1976d2;
     }
-    .info-section p {
-      margin: 12px 0;
-      line-height: 1.5;
+    .radio-serial {
+      font-family: monospace;
+      color: #0d47a1;
     }
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: #90a4ae;
+    .radio-meta {
+      text-align: right;
+      min-width: 180px;
+      color: #666;
+      font-size: 13px;
     }
     .message {
       padding: 10px;
       margin: 12px 0;
       border-radius: 6px;
       font-size: 14px;
-    }
-    .message.success {
-      background: #e8f5e9;
-      color: #2e7d32;
     }
     .message.error {
       background: #ffebee;
@@ -157,86 +132,24 @@
 <body>
   <div class="container">
     <div class="header">
+      <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
       <h1>Control de Radios – CPNB</h1>
-      <button class="logout-btn" onclick="logout()">Salir</button>
+      <p>Sistema de inventario institucional</p>
+      <button class="logout-btn" id="logoutBtn">Salir</button>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <div class="tab active" data-tab="consulta">Consulta</div>
-      <div class="tab" data-tab="registro">Registro</div>
-      <div class="tab" data-tab="informacion">Información</div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Buscar por Serial, ID o Dependencia...">
+      <select id="tipoFilter">
+        <option value="">Todos los tipos</option>
+        <option value="Portátil Motorola">Portátil Motorola</option>
+        <option value="Portátil Hytera">Portátil Hytera</option>
+        <option value="Móvil Motorola">Móvil Motorola</option>
+      </select>
     </div>
 
-    <!-- Contenido: Consulta -->
-    <div id="consulta" class="tab-content active">
-      <div class="filters">
-        <input type="text" id="search" placeholder="Buscar por serial, ID o dependencia..." oninput="loadRadios()" />
-        <select id="tipo" onchange="loadRadios()">
-          <option value="">Todos los tipos</option>
-          <option value="Portátil Motorola">Portátil Motorola</option>
-          <option value="Portátil Hytera">Portátil Hytera</option>
-          <option value="Móvil Motorola">Móvil Motorola</option>
-        </select>
-      </div>
-      <div id="radios-list"></div>
-    </div>
-
-    <!-- Contenido: Registro -->
-    <div id="registro" class="tab-content">
-      <div id="registro-message"></div>
-      <div class="form-group">
-        <label for="reg_marca">Marca *</label>
-        <select id="reg_marca" required>
-          <option value="">Seleccione</option>
-          <option value="MOTOROLA">MOTOROLA</option>
-          <option value="HYTERA">HYTERA</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="reg_modelo">Modelo *</label>
-        <input type="text" id="reg_modelo" placeholder="Ej: MTP850" required />
-      </div>
-      <div class="form-group">
-        <label for="reg_serial">Serial *</label>
-        <input type="text" id="reg_serial" placeholder="Único" required />
-      </div>
-      <div class="form-group">
-        <label for="reg_codigo_id">Código ID</label>
-        <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123" />
-      </div>
-      <div class="form-group">
-        <label for="reg_dependencia">Dependencia</label>
-        <input type="text" id="reg_dependencia" placeholder="Ej: OTIC ZULIA" />
-      </div>
-      <div class="form-group">
-        <label for="reg_observaciones">Observaciones</label>
-        <input type="text" id="reg_observaciones" placeholder="Ej: TIPO C" />
-      </div>
-      <div class="form-group">
-        <label for="reg_tipo_equipo">Tipo de equipo *</label>
-        <select id="reg_tipo_equipo" required>
-          <option value="">Seleccione</option>
-          <option value="Portátil Motorola">Portátil Motorola</option>
-          <option value="Portátil Hytera">Portátil Hytera</option>
-          <option value="Móvil Motorola">Móvil Motorola</option>
-        </select>
-      </div>
-      <button class="btn" onclick="registerRadio()">Registrar Radio</button>
-    </div>
-
-    <!-- Contenido: Información -->
-    <div id="informacion" class="tab-content">
-      <div class="info-section">
-        <h2 style="margin-bottom: 16px; color: #1976d2;">Sistema de Control de Radios</h2>
-        <p>Este sistema permite gestionar el inventario de equipos de comunicación del Cuerpo de Policía Nacional Bolivariana.</p>
-        <p><strong>Unidades registradas:</strong> Radios portátiles Motorola MTP850, portátiles Hytera y móviles Motorola.</p>
-        <p><strong>Soporte técnico:</strong> OTIC ZULIA</p>
-        <p><strong>Última actualización:</strong> Noviembre 2025</p>
-        <hr>
-        <p><small>© Todos los derechos reservados – Cuerpo de Policía Nacional Bolivariana</small></p>
-      </div>
-    </div>
+    <div class="results-count" id="resultsCount">Cargando...</div>
+    <div class="radio-list" id="radioList"></div>
   </div>
 
   <script type="module">
@@ -248,31 +161,23 @@
 
     // Verificar autenticación
     (async () => {
-      const {  { user } } = await supabase.auth.getUser();
-      if (!user) window.location.href = 'index.html';
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data.user) window.location.href = 'index.html';
+      } catch (err) {
+        console.error('Error de autenticación:', err);
+        window.location.href = 'index.html';
+      }
     })();
 
-    // Tabs
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        const target = tab.getAttribute('data-tab');
-        document.getElementById(target).classList.add('active');
-        if (target === 'consulta') loadRadios();
-      });
-    });
-
-    // Cargar radios
     async function loadRadios() {
-      const search = document.getElementById('search').value.trim().toLowerCase();
-      const tipo = document.getElementById('tipo').value;
+      const search = document.getElementById('searchInput').value.trim().toLowerCase();
+      const tipo = document.getElementById('tipoFilter').value;
 
       let query = supabase
         .from('radios')
         .select('*')
-        .order('numero', { ascending: true });
+        .order('numero', { ascending: true }); // equivalente a orden de registro
 
       if (tipo) query = query.eq('tipo_equipo', tipo);
       if (search) {
@@ -280,90 +185,44 @@
       }
 
       const { data, error } = await query;
-      const container = document.getElementById('radios-list');
+      const list = document.getElementById('radioList');
+      const count = document.getElementById('resultsCount');
+
       if (error) {
-        container.innerHTML = '<p style="color:#d32f2f;">Error al cargar los datos.</p>';
+        count.textContent = 'Error al cargar los datos';
+        list.innerHTML = '<div class="message error">No se pudieron cargar los radios.</div>';
         return;
       }
 
-      container.innerHTML = data.length === 0
-        ? '<p>No se encontraron radios.</p>'
+      count.textContent = `Resultados: ${data.length} radio(s)`;
+      list.innerHTML = data.length === 0
+        ? '<p>No se encontraron resultados.</p>'
         : data.map(r => `
-          <div class="radio-card">
-            <p><strong>${r.marca} ${r.modelo}</strong> — N° ${r.numero}</p>
-            <p>	Serial: <strong>${r.serial}</strong></p>
-            <p>	ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
-            <p>	Tipo: ${r.tipo_equipo}${r.observaciones ? ` • Obs: ${r.observaciones}` : ''}</p>
+          <div class="radio-item">
+            <div class="radio-info">
+              <p><span class="radio-id">#${r.numero} • ${r.marca} ${r.modelo}</span></p>
+              <p class="radio-serial">Serial: ${r.serial}</p>
+              <p>ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
+            </div>
+            <div class="radio-meta">
+              <p>${r.tipo_equipo}</p>
+              ${r.observaciones ? `<p>Obs: ${r.observaciones}</p>` : ''}
+            </div>
           </div>
-        `).join('<hr>');
+        `).join('');
     }
 
-    // Registrar nuevo radio
-    async function registerRadio() {
-      const marca = document.getElementById('reg_marca').value;
-      const modelo = document.getElementById('reg_modelo').value;
-      const serial = document.getElementById('reg_serial').value;
-      const codigo_id = document.getElementById('reg_codigo_id').value || null;
-      const dependencia = document.getElementById('reg_dependencia').value || null;
-      const observaciones = document.getElementById('reg_observaciones').value || null;
-      const tipo_equipo = document.getElementById('reg_tipo_equipo').value;
-
-      const msgDiv = document.getElementById('registro-message');
-
-      if (!marca || !modelo || !serial || !tipo_equipo) {
-        msgDiv.innerHTML = '<div class="message error">Todos los campos con * son obligatorios.</div>';
-        return;
-      }
-
-      // Obtener siguiente número (máximo actual + 1 por tipo)
-      const {  maxData, error: maxErr } = await supabase
-        .from('radios')
-        .select('numero', { count: 'exact' })
-        .eq('tipo_equipo', tipo_equipo)
-        .order('numero', { ascending: false })
-        .limit(1);
-
-      const nextNumero = maxData && maxData.length > 0 ? maxData[0].numero + 1 : 1;
-
-      const { data, error } = await supabase
-        .from('radios')
-        .insert([
-          {
-            numero: nextNumero,
-            marca,
-            modelo,
-            serial,
-            codigo_id,
-            dependencia,
-            observaciones,
-            tipo_equipo
-          }
-        ])
-        .select();
-
-      if (error) {
-        msgDiv.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
-      } else {
-        msgDiv.innerHTML = `<div class="message success">✅ Radio registrado exitosamente.</div>`;
-        // Limpiar formulario
-        document.getElementById('reg_marca').value = '';
-        document.getElementById('reg_modelo').value = '';
-        document.getElementById('reg_serial').value = '';
-        document.getElementById('reg_codigo_id').value = '';
-        document.getElementById('reg_dependencia').value = '';
-        document.getElementById('reg_observaciones').value = '';
-        document.getElementById('reg_tipo_equipo').value = '';
-        setTimeout(() => msgDiv.innerHTML = '', 4000);
-      }
-    }
-
-    // Cerrar sesión
     async function logout() {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     }
 
-    // Cargar inicialmente
+    // Eventos
+    document.getElementById('searchInput').addEventListener('input', loadRadios);
+    document.getElementById('tipoFilter').addEventListener('change', loadRadios);
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // Cargar al iniciar
     loadRadios();
   </script>
 </body>
