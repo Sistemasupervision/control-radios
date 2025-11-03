@@ -150,6 +150,18 @@
       display: none;
       margin-top: 8px;
     }
+
+    /* Estilo para campos inválidos */
+    .form-control.invalid {
+      border-color: #d32f2f;
+      box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
+    }
+    .error-text {
+      color: #d32f2f;
+      font-size: 13px;
+      margin-top: 6px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -180,7 +192,7 @@
 
       <div class="form-group">
         <label for="modelo">Modelo *</label>
-        <input type="text" id="modelo" class="form-control" placeholder="Ej: MTP850, PD785, etc." required maxlength="50">
+        <input type="text" id="modelo" class="form-control" placeholder="Ej: MTP850, PD785" required maxlength="50">
       </div>
 
       <div class="form-group">
@@ -194,14 +206,18 @@
         </select>
       </div>
 
+      <!-- Número de Serie -->
       <div class="form-group">
         <label for="serial">Número de Serie *</label>
-        <input type="text" id="serial" class="form-control" placeholder="Ej: 123456789" required maxlength="50">
+        <input type="text" id="serial" class="form-control" placeholder="Ej: ABC123456" required maxlength="50">
+        <div id="serial-error" class="error-text"></div>
       </div>
 
+      <!-- Código ID -->
       <div class="form-group">
-        <label for="id">Código ID *</label>
-        <input type="text" id="id" class="form-control" placeholder="Ej: ID-001" required maxlength="30">
+        <label for="codigo_id">Código ID *</label>
+        <input type="text" id="codigo_id" class="form-control" placeholder="Máximo 8 dígitos" required maxlength="8">
+        <div id="codigo-error" class="error-text"></div>
       </div>
 
       <div class="form-group">
@@ -224,16 +240,14 @@
         </select>
       </div>
 
-      <!-- Motivo Inoperativo -->
       <div id="motivoInoperativo" class="form-group conditional-field">
         <label for="motivo_inoperativo">Motivo (Inoperativo)</label>
-        <textarea id="motivo_inoperativo" class="form-control" rows="2" placeholder="Ej: Batería dañada, micrófono roto, etc."></textarea>
+        <textarea id="motivo_inoperativo" class="form-control" rows="2" placeholder="Ej: Batería dañada"></textarea>
       </div>
 
-      <!-- Motivo Extraviado -->
       <div id="motivoExtraviado" class="form-group conditional-field">
         <label for="motivo_extraviado">Motivo (Extraviado)</label>
-        <textarea id="motivo_extraviado" class="form-control" rows="2" placeholder="Ej: Robo, pérdida en operativo, etc."></textarea>
+        <textarea id="motivo_extraviado" class="form-control" rows="2" placeholder="Ej: Robo durante operativo"></textarea>
       </div>
 
       <button type="submit" class="btn" id="submitBtn">Registrar Radio</button>
@@ -264,7 +278,93 @@
       link.classList.toggle('active', link.getAttribute('href') === currentPage);
     });
 
-    // Mostrar/ocultar motivos según estado
+    // --- Validación en tiempo real ---
+
+    const serialInput = document.getElementById('serial');
+    const codigoInput = document.getElementById('codigo_id');
+    const serialError = document.getElementById('serial-error');
+    const codigoError = document.getElementById('codigo-error');
+
+    // Forzar mayúsculas en serial
+    serialInput.addEventListener('input', () => {
+      serialInput.value = serialInput.value.toUpperCase();
+    });
+
+    // Solo números en Código ID
+    codigoInput.addEventListener('input', () => {
+      // Eliminar todo lo que no sea dígito
+      codigoInput.value = codigoInput.value.replace(/\D/g, '').slice(0, 8);
+    });
+
+    // Verificar unicidad de serial
+    async function checkSerial() {
+      const val = serialInput.value.trim();
+      serialError.style.display = 'none';
+      serialInput.classList.remove('invalid');
+
+      if (val === '') return true;
+
+      const { data, error } = await supabase
+        .from('radios')
+        .select('serial', { count: 'exact' })
+        .eq('serial', val)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+        showMessage('Error al verificar serial', 'error');
+        return false;
+      }
+
+      const exists = data !== null;
+      if (exists) {
+        serialError.textContent = '⚠️ Este número de serie ya está registrado.';
+        serialError.style.display = 'block';
+        serialInput.classList.add('invalid');
+        return false;
+      }
+      return true;
+    }
+
+    // Verificar unicidad de código ID
+    async function checkCodigoId() {
+      const val = codigoInput.value.trim();
+      codigoError.style.display = 'none';
+      codigoInput.classList.remove('invalid');
+
+      if (val === '') return true;
+
+      const { data, error } = await supabase
+        .from('radios')
+        .select('codigo_id', { count: 'exact' })
+        .eq('codigo_id', val)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        showMessage('Error al verificar Código ID', 'error');
+        return false;
+      }
+
+      const exists = data !== null;
+      if (exists) {
+        codigoError.textContent = '⚠️ Este Código ID ya está en uso.';
+        codigoError.style.display = 'block';
+        codigoInput.classList.add('invalid');
+        return false;
+      }
+      return true;
+    }
+
+    serialInput.addEventListener('blur', checkSerial);
+    codigoInput.addEventListener('blur', checkCodigoId);
+
+    // Mostrar mensaje general
+    function showMessage(text, type = '') {
+      const el = document.getElementById('message');
+      el.textContent = text;
+      el.className = 'message ' + type;
+    }
+
+    // Cambiar estado → mostrar motivos
     const statusSelect = document.getElementById('status');
     const motivoInop = document.getElementById('motivoInoperativo');
     const motivoExtr = document.getElementById('motivoExtraviado');
@@ -274,20 +374,7 @@
       motivoExtr.style.display = statusSelect.value === 'Extraviado' ? 'block' : 'none';
     });
 
-    // Validar unicidad
-    async function checkUnique(field, value) {
-      if (!value) return true;
-      const { data, error } = await supabase.from('radios').select('id', { count: 'exact' }).eq(field, value);
-      if (error) throw error;
-      return data.length === 0;
-    }
-
-    function showMessage(text, type = '') {
-      const el = document.getElementById('message');
-      el.textContent = text;
-      el.className = 'message ' + type;
-    }
-
+    // Enviar formulario
     document.getElementById('registroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       showMessage('');
@@ -296,34 +383,35 @@
       const modelo = document.getElementById('modelo').value.trim();
       const tipo = document.getElementById('tipo').value;
       const serial = document.getElementById('serial').value.trim();
-      const idCodigo = document.getElementById('id').value.trim();
+      const codigo_id = document.getElementById('codigo_id').value.trim();
       const dependencia = document.getElementById('dependencia').value.trim();
       const observaciones = document.getElementById('observaciones').value.trim();
       const estado = document.getElementById('status').value;
       const motivo_inoperativo = estado === 'Inoperativo' ? document.getElementById('motivo_inoperativo').value.trim() : null;
       const motivo_extraviado = estado === 'Extraviado' ? document.getElementById('motivo_extraviado').value.trim() : null;
 
-      if (!marca || !modelo || !tipo || !serial || !idCodigo || !estado) {
+      // Validar campos obligatorios
+      if (!marca || !modelo || !tipo || !serial || !codigo_id || !estado) {
         showMessage('⚠️ Todos los campos con * son obligatorios.', 'error');
         return;
       }
 
-      try {
-        if (!(await checkUnique('serial', serial))) {
-          showMessage('⚠️ El número de serie ya está registrado.', 'error');
-          return;
-        }
-        if (!(await checkUnique('id', idCodigo))) {
-          showMessage('⚠️ El Código ID ya está en uso.', 'error');
-          return;
-        }
+      // Validar unicidad al enviar
+      const serialOk = await checkSerial();
+      const codigoOk = await checkCodigoId();
 
+      if (!serialOk || !codigoOk) {
+        showMessage('⚠️ Corrija los campos resaltados.', 'error');
+        return;
+      }
+
+      try {
         const { error } = await supabase.from('radios').insert({
           marca,
           modelo,
           tipo,
           serial,
-          codigo_id: idCodigo,
+          codigo_id,
           dependencia: dependencia || null,
           observaciones: observaciones || null,
           estado,
@@ -337,9 +425,13 @@
         document.getElementById('registroForm').reset();
         motivoInop.style.display = 'none';
         motivoExtr.style.display = 'none';
+        serialInput.classList.remove('invalid');
+        codigoInput.classList.remove('invalid');
+        serialError.style.display = 'none';
+        codigoError.style.display = 'none';
       } catch (err) {
-        console.error('Error:', err);
-        showMessage('❌ Error al registrar. Intente más tarde.', 'error');
+        console.error('Error al registrar:', err);
+        showMessage('❌ Error al guardar. Intente más tarde.', 'error');
       }
     });
   </script>
