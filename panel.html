@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Panel | Control de Radios</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -24,10 +24,10 @@
     .container {
       max-width: 1000px;
       margin: 0 auto;
-      background: rgba(255, 255, 255, 0.94);
-      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 16px;
       padding: 30px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
     }
     .header {
       display: flex;
@@ -44,27 +44,26 @@
       margin-bottom: 12px;
     }
     .header h1 {
-      font-size: 26px;
-      font-weight: 700;
+      font-size: 24px;
+      font-weight: 600;
       color: #0d47a1;
     }
     .logout-btn {
       background: #d32f2f;
       color: white;
       border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
+      padding: 8px 16px;
+      border-radius: 6px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 15px;
+      font-weight: 500;
     }
     .tabs {
       display: flex;
       border-bottom: 1px solid #e0e0e0;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
     .tab {
-      padding: 14px 24px;
+      padding: 12px 24px;
       cursor: pointer;
       font-weight: 600;
       color: #90a4ae;
@@ -80,38 +79,10 @@
     .tab-content.active {
       display: block;
     }
-    /* Estadísticas */
-    .stats-container {
-      display: flex;
-      gap: 18px;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-    }
-    .stat-card {
-      flex: 1;
-      min-width: 130px;
-      background: #e3f2fd;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      box-shadow: 0 3px 8px rgba(25, 118, 210, 0.1);
-      border: 1px solid #bbdefb;
-    }
-    .stat-value {
-      font-size: 26px;
-      font-weight: 700;
-      color: #0d47a1;
-    }
-    .stat-label {
-      font-size: 14px;
-      color: #546e7a;
-      margin-top: 4px;
-    }
-    /* Formularios y listas */
     .search-box {
       margin-bottom: 20px;
     }
-    #searchInput, #mod_searchInput {
+    #searchInput {
       width: 100%;
       padding: 12px;
       border: 1px solid #90a4ae;
@@ -184,15 +155,34 @@
       font-weight: 600;
       cursor: pointer;
       font-size: 15px;
-      margin-right: 8px;
     }
     .btn:hover { background: #1565c0; }
-    .btn.delete {
-      background: #d32f2f;
-    }
-    .btn.delete:hover { background: #b71c1c; }
     .info-section p { margin: 12px 0; line-height: 1.5; }
     hr { border: 0; border-top: 1px solid #e0e0e0; margin: 16px 0; }
+
+    /* Paginación */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .pagination button {
+      padding: 6px 12px;
+      border: 1px solid #90a4ae;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .pagination button.active {
+      background: #1976d2;
+      color: white;
+      border-color: #1976d2;
+    }
+    .pagination button:hover:not(.active) {
+      background: #f0f4f8;
+    }
   </style>
 </head>
 <body>
@@ -207,23 +197,7 @@
     <div class="tabs">
       <div class="tab active" data-tab="consulta">Consulta</div>
       <div class="tab" data-tab="registro">Registro</div>
-      <div class="tab" data-tab="modificaciones">Modificaciones</div>
       <div class="tab" data-tab="informacion">Información</div>
-    </div>
-    <!-- Estadísticas en tiempo real -->
-    <div class="stats-container">
-      <div class="stat-card">
-        <div class="stat-value" id="total-radios">—</div>
-        <div class="stat-label">Total de radios</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="operativos">—</div>
-        <div class="stat-label">Operativos</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="inoperativos">—</div>
-        <div class="stat-label">Inoperativos</div>
-      </div>
     </div>
     <!-- Consulta -->
     <div id="consulta" class="tab-content active">
@@ -231,6 +205,7 @@
         <input type="text" id="searchInput" placeholder="Buscar por Serial o Código ID">
       </div>
       <div class="radio-list" id="radioList"></div>
+      <div class="pagination" id="pagination"></div>
     </div>
     <!-- Registro -->
     <div id="registro" class="tab-content">
@@ -253,8 +228,8 @@
         <div id="serial-message" style="margin-top: 6px; font-size: 13px; min-height: 20px;"></div>
       </div>
       <div class="form-group">
-        <label for="reg_codigo_id">Código ID</label>
-        <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123" />
+        <label for="reg_codigo_id">Código ID (8 dígitos)</label>
+        <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123" maxlength="8" />
         <div id="id-message" style="margin-top: 6px; font-size: 13px; min-height: 20px;"></div>
       </div>
       <div class="form-group">
@@ -280,6 +255,7 @@
         <select id="reg_status" required>
           <option value="Operativo">Operativo</option>
           <option value="Inoperativo">Inoperativo</option>
+          <option value="Extraviado">Extraviado</option>
         </select>
       </div>
       <div class="form-group" id="motivoGroup" style="display:none;">
@@ -287,69 +263,6 @@
         <input type="text" id="reg_motivo" placeholder="Ej: Batería dañada" />
       </div>
       <button class="btn" id="registerBtn">Registrar Radio</button>
-    </div>
-    <!-- Modificaciones -->
-    <div id="modificaciones" class="tab-content">
-      <div class="search-box">
-        <input type="text" id="mod_searchInput" placeholder="Buscar por Serial o Código ID para modificar">
-      </div>
-      <div id="mod_message"></div>
-      <div id="mod_form_container" style="display:none;">
-        <div class="form-group">
-          <label for="mod_numero">Número *</label>
-          <input type="number" id="mod_numero" min="1" required />
-        </div>
-        <div class="form-group">
-          <label for="mod_marca">Marca *</label>
-          <select id="mod_marca" required>
-            <option value="MOTOROLA">MOTOROLA</option>
-            <option value="HYTERA">HYTERA</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="mod_modelo">Modelo *</label>
-          <input type="text" id="mod_modelo" required />
-        </div>
-        <div class="form-group">
-          <label for="mod_serial">Serial *</label>
-          <input type="text" id="mod_serial" required />
-        </div>
-        <div class="form-group">
-          <label for="mod_codigo_id">Código ID</label>
-          <input type="text" id="mod_codigo_id" />
-        </div>
-        <div class="form-group">
-          <label for="mod_dependencia">Dependencia</label>
-          <input type="text" id="mod_dependencia" />
-        </div>
-        <div class="form-group">
-          <label for="mod_observaciones">Observaciones</label>
-          <input type="text" id="mod_observaciones" />
-        </div>
-        <div class="form-group">
-          <label for="mod_tipo_equipo">Tipo de equipo *</label>
-          <select id="mod_tipo_equipo" required>
-            <option value="Portátil Motorola">Portátil Motorola</option>
-            <option value="Portátil Hytera">Portátil Hytera</option>
-            <option value="Móvil Motorola">Móvil Motorola</option>
-            <option value="Móvil Hytera">Móvil Hytera</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="mod_status">Estado *</label>
-          <select id="mod_status" required>
-            <option value="Operativo">Operativo</option>
-            <option value="Inoperativo">Inoperativo</option>
-          </select>
-        </div>
-        <div class="form-group" id="mod_motivoGroup" style="display:none;">
-          <label for="mod_motivo">Motivo (si es inoperativo)</label>
-          <input type="text" id="mod_motivo" />
-        </div>
-        <button class="btn" id="mod_updateBtn">Guardar Cambios</button>
-        <button class="btn delete" id="mod_deleteBtn">Eliminar Radio</button>
-        <button class="btn" style="background:#9e9e9e;" id="mod_cancelBtn">Cancelar</button>
-      </div>
     </div>
     <!-- Información -->
     <div id="informacion" class="tab-content">
@@ -387,8 +300,26 @@
     })();
 
     // ========================
-    // FUNCIONES PRINCIPALES
+    // FUNCIONES DE CONSULTA CON PAGINACIÓN
     // ========================
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let filteredData = [];
+
+    function getStatusColor(status) {
+      if (status === 'Operativo') return '#2e7d32';
+      if (status === 'Inoperativo') return '#1976d2';
+      if (status === 'Extraviado') return '#d32f2f';
+      return '#666';
+    }
+
+    function getStatusLabel(status) {
+      if (status === 'Inoperativo') {
+        // El motivo se mostrará desde el backend en el HTML
+        return 'Inoperativo';
+      }
+      return status;
+    }
 
     async function loadRadios() {
       const term = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -397,45 +328,88 @@
         query = query.or(`serial.ilike.%${term}%,codigo_id.ilike.%${term}%`);
       }
       const { data, error } = await query;
-      const list = document.getElementById('radioList');
       if (error) {
-        list.innerHTML = '<div class="message error">Error al cargar el inventario.</div>';
+        document.getElementById('radioList').innerHTML = '<div class="message error">Error al cargar el inventario.</div>';
         return;
       }
-      list.innerHTML = data.map(r => `
-        <div class="radio-item">
-          <div class="radio-info">
-            <p><span class="radio-id">#${r.numero} • ${r.marca} ${r.modelo}</span></p>
-            <p class="radio-serial">Serial: ${r.serial}</p>
-            <p>ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
-            <p><strong>Status:</strong> ${r.status} ${r.motivo_inoperativo ? `– ${r.motivo_inoperativo}` : ''}</p>
-          </div>
-          <div class="radio-meta">
-            <p>${r.tipo_equipo}</p>
-            ${r.observaciones ? `<p>Obs: ${r.observaciones}</p>` : ''}
-            <p style="font-size:11px; color:#999;">${new Date(r.created_at).toLocaleString('es-VE')}</p>
-          </div>
-        </div>
-      `).join('');
+      filteredData = data;
+      currentPage = 1;
+      renderPage();
+      renderPagination();
     }
 
-    async function loadStats() {
-      const { data, error } = await supabase.from('radios').select('status');
-      if (error) return;
-      const total = data.length;
-      const operativos = data.filter(r => r.status === 'Operativo').length;
-      const inoperativos = total - operativos;
-      document.getElementById('total-radios').textContent = total;
-      document.getElementById('operativos').textContent = operativos;
-      document.getElementById('inoperativos').textContent = inoperativos;
+    function renderPage() {
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pageData = filteredData.slice(start, end);
+
+      const list = document.getElementById('radioList');
+      if (pageData.length === 0) {
+        list.innerHTML = '<p>No se encontraron radios.</p>';
+        return;
+      }
+
+      list.innerHTML = pageData.map(r => {
+        const statusColor = getStatusColor(r.status);
+        return `
+          <div class="radio-item">
+            <div class="radio-info">
+              <p><span class="radio-id">#${r.numero} • ${r.marca} ${r.modelo}</span></p>
+              <p class="radio-serial">Serial: ${r.serial}</p>
+              <p>ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
+              <p><strong>Status:</strong> <span style="color:${statusColor};">${getStatusLabel(r.status)}</span> ${r.motivo_inoperativo ? `– ${r.motivo_inoperativo}` : ''}</p>
+            </div>
+            <div class="radio-meta">
+              <p>${r.tipo_equipo}</p>
+              ${r.observaciones ? `<p>Obs: ${r.observaciones}</p>` : ''}
+              <p style="font-size:11px; color:#999;">${new Date(r.created_at).toLocaleString('es-VE')}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      const pagination = document.getElementById('pagination');
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+      }
+      pagination.innerHTML = html;
+
+      // Agregar eventos
+      pagination.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentPage = parseInt(btn.getAttribute('data-page'));
+          renderPage();
+          renderPagination();
+        });
+      });
     }
 
     // ========================
-    // REGISTRO
+    // FUNCIONES DE REGISTRO
     // ========================
-    let serialTimeout = null;
-    let idTimeout = null;
 
+    // Forzar mayúsculas en serial
+    document.getElementById('reg_serial').addEventListener('input', function () {
+      this.value = this.value.toUpperCase();
+    });
+
+    // Validar código ID: solo números, 8 dígitos
+    document.getElementById('reg_codigo_id').addEventListener('input', function () {
+      let value = this.value.replace(/\D/g, ''); // solo dígitos
+      if (value.length > 8) value = value.slice(0, 8);
+      this.value = value;
+    });
+
+    // Mostrar/ocultar motivo
     document.getElementById('reg_status').addEventListener('change', () => {
       const motivoGroup = document.getElementById('motivoGroup');
       if (document.getElementById('reg_status').value === 'Inoperativo') {
@@ -445,6 +419,10 @@
         document.getElementById('reg_motivo').value = '';
       }
     });
+
+    // Validación en tiempo real
+    let serialTimeout = null;
+    let idTimeout = null;
 
     document.getElementById('reg_serial').addEventListener('input', function () {
       const serial = this.value.trim();
@@ -468,7 +446,13 @@
       const id = this.value.trim();
       const msgDiv = document.getElementById('id-message');
       msgDiv.textContent = '';
-      if (!id) return;
+      if (!id || id.length !== 8) {
+        if (id.length > 0) {
+          msgDiv.textContent = 'Debe tener exactamente 8 dígitos.';
+          msgDiv.style.color = '#d32f2f';
+        }
+        return;
+      }
       if (idTimeout) clearTimeout(idTimeout);
       idTimeout = setTimeout(async () => {
         const { data, error } = await supabase.from('radios').select('codigo_id').eq('codigo_id', id).single();
@@ -486,7 +470,7 @@
       const marca = document.getElementById('reg_marca').value;
       const modelo = document.getElementById('reg_modelo').value;
       const serial = document.getElementById('reg_serial').value.trim();
-      const codigo_id = document.getElementById('reg_codigo_id').value.trim() || null;
+      const codigo_id = document.getElementById('reg_codigo_id').value.trim();
       const dependencia = document.getElementById('reg_dependencia').value || null;
       const observaciones = document.getElementById('reg_observaciones').value || null;
       const tipo_equipo = document.getElementById('reg_tipo_equipo').value;
@@ -495,49 +479,72 @@
         ? (document.getElementById('reg_motivo').value.trim() || null) 
         : null;
       const msg = document.getElementById('registro-message');
+
       if (!marca || !modelo || !serial || !tipo_equipo || !status) {
         msg.innerHTML = '<div class="message error">Campos con * obligatorios.</div>';
         return;
       }
+
       if (status === 'Inoperativo' && !motivo_inoperativo) {
         msg.innerHTML = '<div class="message error">Indique el motivo de inoperatividad.</div>';
         return;
       }
-      // Validar duplicados
-      const { data: sData, error: sErr } = await supabase.from('radios').select('serial').eq('serial', serial).single();
-      if (!sErr) {
+
+      // Validar código ID
+      if (codigo_id && (codigo_id.length !== 8 || isNaN(codigo_id))) {
+        msg.innerHTML = '<div class="message error">El Código ID debe tener exactamente 8 dígitos numéricos.</div>';
+        return;
+      }
+
+      // Verificar duplicados
+      const {  serialData, error: serialErr } = await supabase
+        .from('radios')
+        .select('serial')
+        .eq('serial', serial)
+        .single();
+      if (!serialErr) {
         document.getElementById('serial-message').textContent = '¡Este serial ya se encuentra registrado!';
         return;
       }
+
       if (codigo_id) {
-        const { data: iData, error: iErr } = await supabase.from('radios').select('codigo_id').eq('codigo_id', codigo_id).single();
-        if (!iErr) {
+        const {  idData, error: idErr } = await supabase
+          .from('radios')
+          .select('codigo_id')
+          .eq('codigo_id', codigo_id)
+          .single();
+        if (!idErr) {
           document.getElementById('id-message').textContent = '¡Este Código ID ya está en uso!';
           return;
         }
       }
+
       // Calcular número
-      const { data: radios } = await supabase
+      const {  radios } = await supabase
         .from('radios')
         .select('numero')
         .eq('tipo_equipo', tipo_equipo)
         .order('numero', { ascending: false })
         .limit(1);
       const nextNumero = radios.length > 0 ? radios[0].numero + 1 : 1;
-      const { error } = await supabase.from('radios').insert([{
-        numero: nextNumero,
-        marca,
-        modelo,
-        serial,
-        codigo_id,
-        dependencia,
-        observaciones,
-        tipo_equipo,
-        status,
-        motivo_inoperativo
-      }]);
+
+      const { error } = await supabase
+        .from('radios')
+        .insert([{
+          numero: nextNumero,
+          marca,
+          modelo,
+          serial,
+          codigo_id: codigo_id || null,
+          dependencia,
+          observaciones,
+          tipo_equipo,
+          status,
+          motivo_inoperativo
+        }]);
+
       if (error) {
-        msg.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+        msg.innerHTML = `<div class="message error">Error: ${error.message || 'No se pudo registrar.'}</div>`;
       } else {
         msg.innerHTML = '<div class="message success">✅ Registrado correctamente.</div>';
         // Limpiar
@@ -553,139 +560,8 @@
         document.getElementById('motivoGroup').style.display = 'none';
         document.getElementById('serial-message').textContent = '';
         document.getElementById('id-message').textContent = '';
-        setTimeout(() => {
-          msg.innerHTML = '';
-          loadStats(); // ✅ Actualizar estadísticas
-        }, 2000);
-      }
-    }
-
-    // ========================
-    // MODIFICACIONES
-    // ========================
-    let currentRadioId = null;
-
-    async function loadRadioForEdit(term) {
-      if (!term.trim()) return;
-      const { data, error } = await supabase
-        .from('radios')
-        .select('*')
-        .or(`serial.ilike.%${term}%,codigo_id.ilike.%${term}%`)
-        .single();
-      const msg = document.getElementById('mod_message');
-      const form = document.getElementById('mod_form_container');
-      if (error) {
-        msg.innerHTML = '<div class="message error">Radio no encontrado.</div>';
-        form.style.display = 'none';
-        currentRadioId = null;
-        return;
-      }
-      currentRadioId = data.id;
-      document.getElementById('mod_numero').value = data.numero;
-      document.getElementById('mod_marca').value = data.marca;
-      document.getElementById('mod_modelo').value = data.modelo;
-      document.getElementById('mod_serial').value = data.serial;
-      document.getElementById('mod_codigo_id').value = data.codigo_id || '';
-      document.getElementById('mod_dependencia').value = data.dependencia || '';
-      document.getElementById('mod_observaciones').value = data.observaciones || '';
-      document.getElementById('mod_tipo_equipo').value = data.tipo_equipo;
-      document.getElementById('mod_status').value = data.status;
-      const motivoGroup = document.getElementById('mod_motivoGroup');
-      if (data.status === 'Inoperativo') {
-        motivoGroup.style.display = 'block';
-        document.getElementById('mod_motivo').value = data.motivo_inoperativo || '';
-      } else {
-        motivoGroup.style.display = 'none';
-        document.getElementById('mod_motivo').value = '';
-      }
-      msg.innerHTML = '';
-      form.style.display = 'block';
-    }
-
-    async function updateRadio() {
-      if (!currentRadioId) return;
-      const numero = parseInt(document.getElementById('mod_numero').value);
-      const marca = document.getElementById('mod_marca').value;
-      const modelo = document.getElementById('mod_modelo').value;
-      const serial = document.getElementById('mod_serial').value.trim();
-      const codigo_id = document.getElementById('mod_codigo_id').value.trim() || null;
-      const dependencia = document.getElementById('mod_dependencia').value || null;
-      const observaciones = document.getElementById('mod_observaciones').value || null;
-      const tipo_equipo = document.getElementById('mod_tipo_equipo').value;
-      const status = document.getElementById('mod_status').value;
-      const motivo_inoperativo = status === 'Inoperativo' 
-        ? (document.getElementById('mod_motivo').value.trim() || null) 
-        : null;
-      const msg = document.getElementById('mod_message');
-      if (!marca || !modelo || !serial || !tipo_equipo || !status || isNaN(numero)) {
-        msg.innerHTML = '<div class="message error">Complete todos los campos obligatorios correctamente.</div>';
-        return;
-      }
-      // Validar duplicados (excluyendo el propio)
-      const { data: dupSerial } = await supabase
-        .from('radios')
-        .select('id')
-        .eq('serial', serial)
-        .neq('id', currentRadioId)
-        .single();
-      if (dupSerial) {
-        msg.innerHTML = '<div class="message error">El serial ya está en uso por otro radio.</div>';
-        return;
-      }
-      if (codigo_id) {
-        const { data: dupId } = await supabase
-          .from('radios')
-          .select('id')
-          .eq('codigo_id', codigo_id)
-          .neq('id', currentRadioId)
-          .single();
-        if (dupId) {
-          msg.innerHTML = '<div class="message error">El Código ID ya está en uso por otro radio.</div>';
-          return;
-        }
-      }
-      const { error } = await supabase
-        .from('radios')
-        .update({
-          numero,
-          marca,
-          modelo,
-          serial,
-          codigo_id,
-          dependencia,
-          observaciones,
-          tipo_equipo,
-          status,
-          motivo_inoperativo
-        })
-        .eq('id', currentRadioId);
-      if (error) {
-        msg.innerHTML = `<div class="message error">Error al actualizar: ${error.message}</div>`;
-      } else {
-        msg.innerHTML = '<div class="message success">✅ Cambios guardados.</div>';
-        setTimeout(() => {
-          document.getElementById('mod_form_container').style.display = 'none';
-          document.getElementById('mod_searchInput').value = '';
-          currentRadioId = null;
-          loadStats(); // ✅ Actualizar estadísticas
-        }, 2000);
-      }
-    }
-
-    async function deleteRadio() {
-      if (!confirm('¿Está seguro de eliminar este radio? Esta acción no se puede deshacer.')) return;
-      const { error } = await supabase.from('radios').delete().eq('id', currentRadioId);
-      const msg = document.getElementById('mod_message');
-      if (error) {
-        msg.innerHTML = `<div class="message error">Error al eliminar: ${error.message}</div>`;
-      } else {
-        msg.innerHTML = '<div class="message success">🗑️ Radio eliminado correctamente.</div>';
-        setTimeout(() => {
-          document.getElementById('mod_form_container').style.display = 'none';
-          document.getElementById('mod_searchInput').value = '';
-          currentRadioId = null;
-          loadStats(); // ✅ Actualizar estadísticas
-        }, 2000);
+        setTimeout(() => msg.innerHTML = '', 4000);
+        loadRadios();
       }
     }
 
@@ -697,32 +573,6 @@
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
-    });
-    document.getElementById('mod_searchInput').addEventListener('input', (e) => {
-      const term = e.target.value.trim();
-      if (term.length >= 3) loadRadioForEdit(term);
-      else if (term.length === 0) {
-        document.getElementById('mod_form_container').style.display = 'none';
-        document.getElementById('mod_message').innerHTML = '';
-        currentRadioId = null;
-      }
-    });
-    document.getElementById('mod_status').addEventListener('change', () => {
-      const motivoGroup = document.getElementById('mod_motivoGroup');
-      if (document.getElementById('mod_status').value === 'Inoperativo') {
-        motivoGroup.style.display = 'block';
-      } else {
-        motivoGroup.style.display = 'none';
-        document.getElementById('mod_motivo').value = '';
-      }
-    });
-    document.getElementById('mod_updateBtn').addEventListener('click', updateRadio);
-    document.getElementById('mod_deleteBtn').addEventListener('click', deleteRadio);
-    document.getElementById('mod_cancelBtn').addEventListener('click', () => {
-      document.getElementById('mod_form_container').style.display = 'none';
-      document.getElementById('mod_searchInput').value = '';
-      document.getElementById('mod_message').innerHTML = '';
-      currentRadioId = null;
     });
 
     // Pestañas
@@ -739,7 +589,6 @@
 
     // Iniciar
     loadRadios();
-    loadStats(); // ✅ Cargar estadísticas al inicio
   </script>
 </body>
 </html>
