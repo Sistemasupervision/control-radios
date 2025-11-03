@@ -4,9 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Panel | Control de Radios</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
     body {
       background-image: url('fondo.png');
       background-size: cover;
@@ -20,64 +25,95 @@
       align-items: center;
     }
     .container {
-      max-width: 500px;
-      background: rgba(255, 255, 255, 0.94);
-      border-radius: 16px;
-      padding: 30px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 1000px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(4px);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .header-left {
       text-align: center;
+      flex: 1;
     }
     .logo-img {
       max-width: 100px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
-    h1 {
-      font-size: 24px;
-      font-weight: 600;
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
       color: #0d47a1;
-      margin-bottom: 30px;
-    }
-    .nav-btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      margin: 12px 0;
-      background: #1976d2;
-      color: white;
-      text-decoration: none;
-      border: none;
-      border-radius: 10px;
-      font-size: 17px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .nav-btn:hover {
-      background: #1565c0;
     }
     .logout-btn {
-      margin-top: 24px;
       background: #d32f2f;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: 10px;
       cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      transition: background 0.2s;
+    }
+    .logout-btn:hover {
+      background: #b71c1c;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 2px;
+      background: #f0f4f8;
+      padding: 6px;
+      border-radius: 14px;
+      margin-bottom: 32px;
+    }
+    .tab-link {
+      flex: 1;
+      text-align: center;
+      padding: 14px 8px;
+      text-decoration: none;
+      color: #546e7a;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.25s ease;
+    }
+    .tab-link:hover {
+      color: #1976d2;
+      background: #e3f2fd;
+    }
+    .tab-link.active {
+      color: #1976d2;
+      background: white;
+      box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
-    <h1>Control de Radios – CPNB</h1>
-    
-    <a href="consulta.html" class="nav-btn">🔍 Consulta de Radios</a>
-    <a href="registro.html" class="nav-btn">➕ Registro de Radio</a>
-    <a href="modificaciones.html" class="nav-btn">✏️ Modificaciones</a>
-    <a href="informacion.html" class="nav-btn">ℹ️ Información del Sistema</a>
-    
-    <button class="logout-btn" id="logoutBtn">Salir</button>
+    <div class="header">
+      <div class="header-left">
+        <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
+        <h1>Control de Radios – CPNB</h1>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Salir</button>
+    </div>
+    <div class="tabs">
+      <a href="consulta.html" class="tab-link active">🔍 Consulta</a>
+      <a href="registro.html" class="tab-link">➕ Registro</a>
+      <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
+      <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+    </div>
+    <div style="text-align: center; color: #666; font-size: 15px;">
+      <p>Seleccione una opción para continuar</p>
+    </div>
   </div>
 
   <script type="module">
@@ -96,9 +132,21 @@
       }
     })();
 
+    // Salir
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
+    });
+
+    // Resaltar pestaña activa según la URL
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.tab-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === currentPage) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
     });
   </script>
 </body>
