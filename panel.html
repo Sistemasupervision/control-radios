@@ -262,7 +262,6 @@
     const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
     // Verificar autenticación
     (async () => {
       try {
@@ -272,7 +271,6 @@
         window.location.href = 'index.html';
       }
     })();
-
     // Cargar radios
     async function loadRadios() {
       const term = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -305,7 +303,6 @@
         </div>
       `).join('');
     }
-
     // Registrar radio
     async function registerRadio() {
       const marca = document.getElementById('reg_marca').value;
@@ -320,18 +317,15 @@
         ? (document.getElementById('reg_motivo').value.trim() || null) 
         : null;
       const msg = document.getElementById('registro-message');
-
       if (!marca || !modelo || !serial || !tipo_equipo || !status) {
         msg.innerHTML = '<div class="message error">Campos con * obligatorios.</div>';
         return;
       }
-
       if (status === 'Inoperativo' && !motivo_inoperativo) {
         msg.innerHTML = '<div class="message error">Indique el motivo de inoperatividad.</div>';
         return;
       }
-
-      // Verificar duplicados antes de insertar
+      // ✅ Verificar duplicados antes de insertar
       const { data: serialData, error: serialErr } = await supabase
         .from('radios')
         .select('serial')
@@ -342,7 +336,6 @@
         document.getElementById('serial-message').style.color = '#d32f2f';
         return;
       }
-
       if (codigo_id) {
         const { data: idData, error: idErr } = await supabase
           .from('radios')
@@ -355,8 +348,7 @@
           return;
         }
       }
-
-      // ✅ CORRECCIÓN: Manejo seguro del cálculo del siguiente número
+      // ✅ CORRECCIÓN SEGURA: Manejo de nextNumero
       let nextNumero = 1;
       try {
         const { data: radios, error } = await supabase
@@ -365,13 +357,11 @@
           .eq('tipo_equipo', tipo_equipo)
           .order('numero', { ascending: false })
           .limit(1);
-
         if (!error && radios && radios.length > 0) {
           nextNumero = radios[0].numero + 1;
         }
       } catch (err) {
-        console.warn("No se pudo obtener el último número. Usando 1.", err);
-        nextNumero = 1;
+        console.warn("Error al obtener el número secuencial. Usando 1.");
       }
 
       const { error } = await supabase
@@ -388,13 +378,11 @@
           status,
           motivo_inoperativo
         }]);
-
       if (error) {
         msg.innerHTML = `<div class="message error">Error: ${error.message || 'No se pudo registrar.'}</div>`;
-        console.error("Error al insertar:", error);
       } else {
         msg.innerHTML = '<div class="message success">✅ Registrado correctamente.</div>';
-        // Limpiar formulario
+        // Limpiar
         document.getElementById('reg_marca').value = '';
         document.getElementById('reg_modelo').value = '';
         document.getElementById('reg_serial').value = '';
@@ -411,7 +399,6 @@
         loadRadios();
       }
     }
-
     // Mostrar/ocultar motivo
     document.getElementById('reg_status').addEventListener('change', () => {
       const motivoGroup = document.getElementById('motivoGroup');
@@ -422,8 +409,7 @@
         document.getElementById('reg_motivo').value = '';
       }
     });
-
-    // Validación en tiempo real
+    // ✅ Validación en tiempo real – CORREGIDA
     let serialTimeout = null;
     let idTimeout = null;
     document.getElementById('reg_serial').addEventListener('input', function () {
@@ -468,7 +454,6 @@
         }
       }, 500);
     });
-
     // Eventos
     document.getElementById('searchInput').addEventListener('input', loadRadios);
     document.getElementById('registerBtn').addEventListener('click', registerRadio);
@@ -476,7 +461,6 @@
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
-
     // Pestañas
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -488,7 +472,6 @@
         if (id === 'consulta') loadRadios();
       });
     });
-
     // Iniciar
     loadRadios();
   </script>
