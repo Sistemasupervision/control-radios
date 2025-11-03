@@ -56,11 +56,11 @@
       background: #d32f2f;
       color: white;
       border: none;
-      padding: 10px 16px;
+      padding: 10px 18px;
       border-radius: 10px;
       cursor: pointer;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 15px;
       transition: background 0.2s;
     }
     .logout-btn:hover {
@@ -78,7 +78,7 @@
     .tab-link {
       flex: 1;
       text-align: center;
-      padding: 12px 8px;
+      padding: 14px 8px;
       text-decoration: none;
       color: #546e7a;
       font-weight: 600;
@@ -94,6 +94,7 @@
       background: white;
       box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
     }
+
     .form-group {
       margin-bottom: 20px;
     }
@@ -145,6 +146,10 @@
     }
     .message.success { color: #2e7d32; }
     .message.error { color: #d32f2f; }
+    .conditional-field {
+      display: none;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -165,12 +170,27 @@
 
     <form id="registroForm">
       <div class="form-group">
+        <label for="marca">Marca *</label>
+        <select id="marca" class="form-control" required>
+          <option value="">— Seleccione —</option>
+          <option value="Motorola">Motorola</option>
+          <option value="Hytera">Hytera</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="modelo">Modelo *</label>
+        <input type="text" id="modelo" class="form-control" placeholder="Ej: MTP850, PD785, etc." required maxlength="50">
+      </div>
+
+      <div class="form-group">
         <label for="tipo">Tipo de Radio *</label>
         <select id="tipo" class="form-control" required>
           <option value="">— Seleccione —</option>
           <option value="Portátil Motorola">Portátil Motorola</option>
           <option value="Portátil Hytera">Portátil Hytera</option>
           <option value="Móvil Motorola">Móvil Motorola</option>
+          <option value="Móvil Hytera">Móvil Hytera</option>
         </select>
       </div>
 
@@ -190,6 +210,11 @@
       </div>
 
       <div class="form-group">
+        <label for="observaciones">Observaciones</label>
+        <textarea id="observaciones" class="form-control" rows="2" placeholder="Notas generales..."></textarea>
+      </div>
+
+      <div class="form-group">
         <label for="status">Estado *</label>
         <select id="status" class="form-control" required>
           <option value="">— Seleccione —</option>
@@ -199,9 +224,16 @@
         </select>
       </div>
 
-      <div class="form-group">
-        <label for="observaciones">Observaciones</label>
-        <textarea id="observaciones" class="form-control" rows="3" placeholder="Notas adicionales..."></textarea>
+      <!-- Motivo Inoperativo -->
+      <div id="motivoInoperativo" class="form-group conditional-field">
+        <label for="motivo_inoperativo">Motivo (Inoperativo)</label>
+        <textarea id="motivo_inoperativo" class="form-control" rows="2" placeholder="Ej: Batería dañada, micrófono roto, etc."></textarea>
+      </div>
+
+      <!-- Motivo Extraviado -->
+      <div id="motivoExtraviado" class="form-group conditional-field">
+        <label for="motivo_extraviado">Motivo (Extraviado)</label>
+        <textarea id="motivo_extraviado" class="form-control" rows="2" placeholder="Ej: Robo, pérdida en operativo, etc."></textarea>
       </div>
 
       <button type="submit" class="btn" id="submitBtn">Registrar Radio</button>
@@ -222,47 +254,33 @@
       if (!data.user) window.location.href = 'index.html';
     })();
 
-    // Salir
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
-    // Resaltar pestaña activa
     const currentPage = window.location.pathname.split('/').pop();
     document.querySelectorAll('.tab-link').forEach(link => {
       link.classList.toggle('active', link.getAttribute('href') === currentPage);
     });
 
-    // Validar unicidad en tiempo real (al salir del campo)
-    async function checkUnique(field, value, errorMsg) {
+    // Mostrar/ocultar motivos según estado
+    const statusSelect = document.getElementById('status');
+    const motivoInop = document.getElementById('motivoInoperativo');
+    const motivoExtr = document.getElementById('motivoExtraviado');
+
+    statusSelect.addEventListener('change', () => {
+      motivoInop.style.display = statusSelect.value === 'Inoperativo' ? 'block' : 'none';
+      motivoExtr.style.display = statusSelect.value === 'Extraviado' ? 'block' : 'none';
+    });
+
+    // Validar unicidad
+    async function checkUnique(field, value) {
       if (!value) return true;
-      const { data, error } = await supabase
-        .from('radios')
-        .select('id', { count: 'exact' })
-        .eq(field, value);
-      if (error) {
-        showMessage('Error al verificar unicidad', 'error');
-        return false;
-      }
+      const { data, error } = await supabase.from('radios').select('id', { count: 'exact' }).eq(field, value);
+      if (error) throw error;
       return data.length === 0;
     }
-
-    document.getElementById('serial').addEventListener('blur', async function() {
-      const val = this.value.trim();
-      if (val && !(await checkUnique('serial', val))) {
-        showMessage('⚠️ El número de serie ya está registrado.', 'error');
-        this.focus();
-      }
-    });
-
-    document.getElementById('id').addEventListener('blur', async function() {
-      const val = this.value.trim();
-      if (val && !(await checkUnique('id', val))) {
-        showMessage('⚠️ El Código ID ya está en uso.', 'error');
-        this.focus();
-      }
-    });
 
     function showMessage(text, type = '') {
       const el = document.getElementById('message');
@@ -270,55 +288,58 @@
       el.className = 'message ' + type;
     }
 
-    // Enviar formulario
     document.getElementById('registroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-
-      // Limpiar mensaje
       showMessage('');
 
+      const marca = document.getElementById('marca').value;
+      const modelo = document.getElementById('modelo').value.trim();
       const tipo = document.getElementById('tipo').value;
       const serial = document.getElementById('serial').value.trim();
       const idCodigo = document.getElementById('id').value.trim();
       const dependencia = document.getElementById('dependencia').value.trim();
-      const status = document.getElementById('status').value;
       const observaciones = document.getElementById('observaciones').value.trim();
+      const estado = document.getElementById('status').value;
+      const motivo_inoperativo = estado === 'Inoperativo' ? document.getElementById('motivo_inoperativo').value.trim() : null;
+      const motivo_extraviado = estado === 'Extraviado' ? document.getElementById('motivo_extraviado').value.trim() : null;
 
-      // Validaciones
-      if (!tipo || !serial || !idCodigo || !status) {
-        showMessage('⚠️ Todos los campos marcados con * son obligatorios.', 'error');
+      if (!marca || !modelo || !tipo || !serial || !idCodigo || !estado) {
+        showMessage('⚠️ Todos los campos con * son obligatorios.', 'error');
         return;
       }
 
-      // Verificar unicidad antes de insertar
-      const serialOk = await checkUnique('serial', serial);
-      const idOk = await checkUnique('id', idCodigo);
+      try {
+        if (!(await checkUnique('serial', serial))) {
+          showMessage('⚠️ El número de serie ya está registrado.', 'error');
+          return;
+        }
+        if (!(await checkUnique('id', idCodigo))) {
+          showMessage('⚠️ El Código ID ya está en uso.', 'error');
+          return;
+        }
 
-      if (!serialOk) {
-        showMessage('⚠️ El número de serie ya existe.', 'error');
-        return;
-      }
-      if (!idOk) {
-        showMessage('⚠️ El Código ID ya está en uso.', 'error');
-        return;
-      }
+        const { error } = await supabase.from('radios').insert({
+          marca,
+          modelo,
+          tipo,
+          serial,
+          id: idCodigo,
+          dependencia: dependencia || null,
+          observaciones: observaciones || null,
+          estado,
+          motivo_inoperativo,
+          motivo_extraviado
+        });
 
-      // Insertar
-      const { error } = await supabase.from('radios').insert({
-        tipo,
-        serial,
-        id: idCodigo,
-        dependencia: dependencia || null,
-        estado: status,
-        observaciones: observaciones || null
-      });
+        if (error) throw error;
 
-      if (error) {
-        console.error('Error al registrar:', error);
-        showMessage('❌ Error al registrar el radio. Intente nuevamente.', 'error');
-      } else {
         showMessage('✅ ¡Radio registrado exitosamente!', 'success');
         document.getElementById('registroForm').reset();
+        motivoInop.style.display = 'none';
+        motivoExtr.style.display = 'none';
+      } catch (err) {
+        console.error('Error:', err);
+        showMessage('❌ Error al registrar. Intente más tarde.', 'error');
       }
     });
   </script>
