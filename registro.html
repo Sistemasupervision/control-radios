@@ -171,11 +171,23 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <div class="header-left">
-        <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
-        <h1>Control de Radios – CPNB</h1>
-      </div>
+  <div class="header">
+  <div class="header-left">
+    <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
+    <h1>Control de Radios – CPNB</h1>
+  </div>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <a href="panel.html" class="logout-btn" style="
+      background: #1976d2;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+    ">📊 Panel</a>
+    <button class="logout-btn" id="logoutBtn">Salir</button>
+  </div>
+</div>
       <button class="logout-btn" id="logoutBtn">Salir</button>
     </div>
 
@@ -186,22 +198,6 @@
       <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
       <a href="informacion.html" class="tab-link">ℹ️ Información</a>
     </div>
-    <div style="text-align: center; margin-bottom: 24px;">
-  <a href="panel.html" style="
-    display: inline-block;
-    background: #e3f2fd;
-    color: #0d47a1;
-    padding: 10px 24px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 15px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    transition: all 0.2s;
-  " onmouseover="this.style.background='#bbdefb'" onmouseout="this.style.background='#e3f2fd'">
-    📊 Volver al Panel Principal
-  </a>
-</div>
 
     <!-- Formulario de registro -->
     <div class="form-container">
