@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro | Control de Radios</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+    body {
+      background-image: url('fondo.png');
+      background-size: cover;
+      background-position: right top;
+      background-repeat: no-repeat;
+      color: #0d47a1;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 650px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(4px);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .header-left {
+      text-align: center;
+      flex: 1;
+    }
+    .logo-img {
+      max-width: 100px;
+      margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #0d47a1;
+    }
+    .logout-btn {
+      background: #d32f2f;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    .logout-btn:hover {
+      background: #b71c1c;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 2px;
+      background: #f0f4f8;
+      padding: 6px;
+      border-radius: 14px;
+      margin-bottom: 28px;
+    }
+    .tab-link {
+      flex: 1;
+      text-align: center;
+      padding: 12px 8px;
+      text-decoration: none;
+      color: #546e7a;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.25s ease;
+    }
+    .tab-link:hover {
+      color: #1976d2;
+      background: #e3f2fd;
+    }
+    .tab-link.active {
+      color: #1976d2;
+      background: white;
+      box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #37474f;
+      font-size: 15px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #90a4ae;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #263238;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #1976d2;
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #1565c0;
+    }
+    .btn:disabled {
+      background: #90a4ae;
+      cursor: not-allowed;
+    }
+    .message {
+      text-align: center;
+      margin-top: 16px;
+      min-height: 24px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .message.success { color: #2e7d32; }
+    .message.error { color: #d32f2f; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
+        <h1>Registro de Radio</h1>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Salir</button>
+    </div>
+    <div class="tabs">
+      <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+      <a href="registro.html" class="tab-link active">➕ Registro</a>
+      <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
+      <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+    </div>
+
+    <form id="registroForm">
+      <div class="form-group">
+        <label for="tipo">Tipo de Radio *</label>
+        <select id="tipo" class="form-control" required>
+          <option value="">— Seleccione —</option>
+          <option value="Portátil Motorola">Portátil Motorola</option>
+          <option value="Portátil Hytera">Portátil Hytera</option>
+          <option value="Móvil Motorola">Móvil Motorola</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="serial">Número de Serie *</label>
+        <input type="text" id="serial" class="form-control" placeholder="Ej: 123456789" required maxlength="50">
+      </div>
+
+      <div class="form-group">
+        <label for="id">Código ID *</label>
+        <input type="text" id="id" class="form-control" placeholder="Ej: ID-001" required maxlength="30">
+      </div>
+
+      <div class="form-group">
+        <label for="dependencia">Dependencia</label>
+        <input type="text" id="dependencia" class="form-control" placeholder="Ej: Coordinación Zulia">
+      </div>
+
+      <div class="form-group">
+        <label for="status">Estado *</label>
+        <select id="status" class="form-control" required>
+          <option value="">— Seleccione —</option>
+          <option value="Operativo">Operativo</option>
+          <option value="Inoperativo">Inoperativo</option>
+          <option value="Extraviado">Extraviado</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="observaciones">Observaciones</label>
+        <textarea id="observaciones" class="form-control" rows="3" placeholder="Notas adicionales..."></textarea>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">Registrar Radio</button>
+    </form>
+
+    <div class="message" id="message"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    // Verificar autenticación
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) window.location.href = 'index.html';
+    })();
+
+    // Salir
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    // Resaltar pestaña activa
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === currentPage);
+    });
+
+    // Validar unicidad en tiempo real (al salir del campo)
+    async function checkUnique(field, value, errorMsg) {
+      if (!value) return true;
+      const { data, error } = await supabase
+        .from('radios')
+        .select('id', { count: 'exact' })
+        .eq(field, value);
+      if (error) {
+        showMessage('Error al verificar unicidad', 'error');
+        return false;
+      }
+      return data.length === 0;
+    }
+
+    document.getElementById('serial').addEventListener('blur', async function() {
+      const val = this.value.trim();
+      if (val && !(await checkUnique('serial', val))) {
+        showMessage('⚠️ El número de serie ya está registrado.', 'error');
+        this.focus();
+      }
+    });
+
+    document.getElementById('id').addEventListener('blur', async function() {
+      const val = this.value.trim();
+      if (val && !(await checkUnique('id', val))) {
+        showMessage('⚠️ El Código ID ya está en uso.', 'error');
+        this.focus();
+      }
+    });
+
+    function showMessage(text, type = '') {
+      const el = document.getElementById('message');
+      el.textContent = text;
+      el.className = 'message ' + type;
+    }
+
+    // Enviar formulario
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Limpiar mensaje
+      showMessage('');
+
+      const tipo = document.getElementById('tipo').value;
+      const serial = document.getElementById('serial').value.trim();
+      const idCodigo = document.getElementById('id').value.trim();
+      const dependencia = document.getElementById('dependencia').value.trim();
+      const status = document.getElementById('status').value;
+      const observaciones = document.getElementById('observaciones').value.trim();
+
+      // Validaciones
+      if (!tipo || !serial || !idCodigo || !status) {
+        showMessage('⚠️ Todos los campos marcados con * son obligatorios.', 'error');
+        return;
+      }
+
+      // Verificar unicidad antes de insertar
+      const serialOk = await checkUnique('serial', serial);
+      const idOk = await checkUnique('id', idCodigo);
+
+      if (!serialOk) {
+        showMessage('⚠️ El número de serie ya existe.', 'error');
+        return;
+      }
+      if (!idOk) {
+        showMessage('⚠️ El Código ID ya está en uso.', 'error');
+        return;
+      }
+
+      // Insertar
+      const { error } = await supabase.from('radios').insert({
+        tipo,
+        serial,
+        id: idCodigo,
+        dependencia: dependencia || null,
+        estado: status,
+        observaciones: observaciones || null
+      });
+
+      if (error) {
+        console.error('Error al registrar:', error);
+        showMessage('❌ Error al registrar el radio. Intente nuevamente.', 'error');
+      } else {
+        showMessage('✅ ¡Radio registrado exitosamente!', 'success');
+        document.getElementById('registroForm').reset();
+      }
+    });
+  </script>
+</body>
+</html>
