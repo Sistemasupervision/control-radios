@@ -215,8 +215,11 @@
         <div id="serial-message" style="margin-top: 6px; font-size: 13px; min-height: 20px;"></div>
       </div>
       <div class="form-group">
-        <label for="reg_codigo_id">Código ID</label>
-        <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123" />
+        <label for="reg_codigo_id">Código ID (máx. 8 dígitos)</label>
+        <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123"
+               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8)"
+               maxlength="8"
+               inputmode="numeric" />
         <div id="id-message" style="margin-top: 6px; font-size: 13px; min-height: 20px;"></div>
       </div>
       <div class="form-group">
@@ -255,7 +258,12 @@
     <!-- Información -->
     <div id="informacion" class="tab-content">
       <div class="info-section">
-        <h2 style="margin-bottom: 16px; color: #1976d2;">Sistema de Control de Radios</h2>
+        <h2 style="margin-bottom: 16px; color: #1976d2;">Resumen del Inventario</h2>
+        <div id="resumen-contadores">
+          <p>Cargando resumen...</p>
+        </div>
+        <hr>
+        <h3 style="margin: 20px 0 12px; color: #0d47a1;">Sistema de Control de Radios</h3>
         <p>Este sistema permite gestionar el inventario de equipos de comunicación del Cuerpo de Policía Nacional Bolivariana.</p>
         <p><strong>Tipos de unidades registradas:</strong></p>
         <ul style="margin-left: 20px; margin-bottom: 12px;">
@@ -289,9 +297,18 @@
       }
     })();
 
-    // Paginación
+    // === CONSULTA ===
     let currentPage = 1;
     const itemsPerPage = 10;
+
+    function getStatusStyle(status) {
+      switch (status) {
+        case 'Operativo': return 'color:#2e7d32; font-weight:bold;';
+        case 'Inoperativo': return 'color:#0d47a1; font-weight:bold;';
+        case 'Extraviado': return 'color:#d32f2f; font-weight:bold;';
+        default: return '';
+      }
+    }
 
     async function loadRadios(page = 1) {
       const term = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -318,8 +335,7 @@
       }
 
       list.innerHTML = data.map(r => {
-        const isExtraviado = r.status === 'Extraviado';
-        const statusStyle = isExtraviado ? 'color:#d32f2f; font-weight:bold;' : '';
+        const statusStyle = getStatusStyle(r.status);
         return `
           <div class="radio-item">
             <div class="radio-info">
@@ -361,13 +377,36 @@
       container.innerHTML = html;
     }
 
-    // Hacer changePage accesible globalmente para los botones
     window.changePage = function(page) {
       currentPage = page;
       loadRadios(page);
     };
 
-    // Registrar radio
+    // === RESUMEN ===
+    async function loadResumen() {
+      const { data, error } = await supabase
+        .from('radios')
+        .select('status');
+
+      if (error) {
+        document.getElementById('resumen-contadores').innerHTML = '<p class="message error">Error al cargar el resumen.</p>';
+        return;
+      }
+
+      const total = data.length;
+      const operativos = data.filter(r => r.status === 'Operativo').length;
+      const inoperativos = data.filter(r => r.status === 'Inoperativo').length;
+      const extraviados = data.filter(r => r.status === 'Extraviado').length;
+
+      document.getElementById('resumen-contadores').innerHTML = `
+        <p><strong>Total de radios registrados:</strong> ${total}</p>
+        <p style="color:#2e7d32;"><strong>• Operativos:</strong> ${operativos}</p>
+        <p style="color:#0d47a1;"><strong>• Inoperativos:</strong> ${inoperativos}</p>
+        <p style="color:#d32f2f;"><strong>• Extraviados:</strong> ${extraviados}</p>
+      `;
+    }
+
+    // === REGISTRO ===
     async function registerRadio() {
       const marca = document.getElementById('reg_marca').value;
       const modelo = document.getElementById('reg_modelo').value.trim().toUpperCase();
@@ -392,7 +431,7 @@
       }
 
       // Verificar duplicados
-      const { data: serialData, error: serialErr } = await supabase
+      const {  serialData, error: serialErr } = await supabase
         .from('radios')
         .select('serial')
         .eq('serial', serial)
@@ -404,7 +443,7 @@
       }
 
       if (codigo_id) {
-        const { data: idData, error: idErr } = await supabase
+        const {  idData, error: idErr } = await supabase
           .from('radios')
           .select('codigo_id')
           .eq('codigo_id', codigo_id)
@@ -417,7 +456,7 @@
       }
 
       // Siguiente número por tipo
-      const { data: radios } = await supabase
+      const {  radios } = await supabase
         .from('radios')
         .select('numero')
         .eq('tipo_equipo', tipo_equipo)
@@ -458,7 +497,7 @@
         document.getElementById('serial-message').textContent = '';
         document.getElementById('id-message').textContent = '';
         setTimeout(() => msg.innerHTML = '', 4000);
-        loadRadios();
+        loadRadios(1);
       }
     }
 
@@ -473,7 +512,7 @@
       }
     });
 
-    // Validación en tiempo real – CORREGIDA
+    // Validación en tiempo real
     let serialTimeout = null;
     let idTimeout = null;
 
@@ -538,6 +577,7 @@
         const id = tab.getAttribute('data-tab');
         document.getElementById(id).classList.add('active');
         if (id === 'consulta') loadRadios(1);
+        if (id === 'informacion') loadResumen();
       });
     });
 
