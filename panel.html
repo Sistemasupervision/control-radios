@@ -159,6 +159,12 @@
     .btn:hover { background: #1565c0; }
     .info-section p { margin: 12px 0; line-height: 1.5; }
     hr { border: 0; border-top: 1px solid #e0e0e0; margin: 16px 0; }
+    #pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -183,6 +189,7 @@
         <input type="text" id="searchInput" placeholder="Buscar por Serial o Código ID">
       </div>
       <div class="radio-list" id="radioList"></div>
+      <div id="pagination"></div>
     </div>
 
     <!-- Registro -->
@@ -198,11 +205,13 @@
       </div>
       <div class="form-group">
         <label for="reg_modelo">Modelo *</label>
-        <input type="text" id="reg_modelo" placeholder="Ej: MTP850" required />
+        <input type="text" id="reg_modelo" placeholder="Ej: MTP850" required 
+               oninput="this.value = this.value.toUpperCase()" style="text-transform: uppercase;" />
       </div>
       <div class="form-group">
         <label for="reg_serial">Serial *</label>
-        <input type="text" id="reg_serial" placeholder="Único" required />
+        <input type="text" id="reg_serial" placeholder="Único" required 
+               oninput="this.value = this.value.toUpperCase()" style="text-transform: uppercase;" />
         <div id="serial-message" style="margin-top: 6px; font-size: 13px; min-height: 20px;"></div>
       </div>
       <div class="form-group">
@@ -233,6 +242,7 @@
         <select id="reg_status" required>
           <option value="Operativo">Operativo</option>
           <option value="Inoperativo">Inoperativo</option>
+          <option value="Extraviado">Extraviado</option>
         </select>
       </div>
       <div class="form-group" id="motivoGroup" style="display:none;">
@@ -279,48 +289,89 @@
       }
     })();
 
-    // Cargar radios
-    async function loadRadios() {
+    // Paginación
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    async function loadRadios(page = 1) {
       const term = document.getElementById('searchInput').value.trim().toLowerCase();
       let query = supabase
         .from('radios')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: true });
 
       if (term) {
         query = query.or(`serial.ilike.%${term}%,codigo_id.ilike.%${term}%`);
       }
 
-      const { data, error } = await query;
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      const { data, error, count } = await query.range(from, to);
       const list = document.getElementById('radioList');
+      const pagination = document.getElementById('pagination');
 
       if (error) {
         list.innerHTML = '<div class="message error">Error al cargar el inventario.</div>';
+        pagination.innerHTML = '';
         return;
       }
 
-      list.innerHTML = data.map(r => `
-        <div class="radio-item">
-          <div class="radio-info">
-            <p><span class="radio-id">#${r.numero} • ${r.marca} ${r.modelo}</span></p>
-            <p class="radio-serial">Serial: ${r.serial}</p>
-            <p>ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
-            <p><strong>Status:</strong> ${r.status} ${r.motivo_inoperativo ? `– ${r.motivo_inoperativo}` : ''}</p>
+      list.innerHTML = data.map(r => {
+        const isExtraviado = r.status === 'Extraviado';
+        const statusStyle = isExtraviado ? 'color:#d32f2f; font-weight:bold;' : '';
+        return `
+          <div class="radio-item">
+            <div class="radio-info">
+              <p><span class="radio-id">#${r.numero} • ${r.marca} ${r.modelo}</span></p>
+              <p class="radio-serial">Serial: ${r.serial}</p>
+              <p>ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
+              <p><strong>Status:</strong> <span style="${statusStyle}">${r.status}</span> ${r.motivo_inoperativo ? `– ${r.motivo_inoperativo}` : ''}</p>
+            </div>
+            <div class="radio-meta">
+              <p>${r.tipo_equipo}</p>
+              ${r.observaciones ? `<p>Obs: ${r.observaciones}</p>` : ''}
+              <p style="font-size:11px; color:#999;">${new Date(r.created_at).toLocaleString('es-VE')}</p>
+            </div>
           </div>
-          <div class="radio-meta">
-            <p>${r.tipo_equipo}</p>
-            ${r.observaciones ? `<p>Obs: ${r.observaciones}</p>` : ''}
-            <p style="font-size:11px; color:#999;">${new Date(r.created_at).toLocaleString('es-VE')}</p>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
+
+      renderPagination(count || 0, page);
     }
+
+    function renderPagination(total, page) {
+      const totalPages = Math.ceil(total / itemsPerPage);
+      const container = document.getElementById('pagination');
+
+      if (totalPages <= 1) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'flex';
+      let html = '';
+      if (page > 1) {
+        html += `<button class="btn" onclick="window.changePage(${page - 1})">Anterior</button>`;
+      }
+      html += `<span style="align-self:center; margin:0 10px;">Página ${page} de ${totalPages}</span>`;
+      if (page < totalPages) {
+        html += `<button class="btn" onclick="window.changePage(${page + 1})">Siguiente</button>`;
+      }
+      container.innerHTML = html;
+    }
+
+    // Hacer changePage accesible globalmente para los botones
+    window.changePage = function(page) {
+      currentPage = page;
+      loadRadios(page);
+    };
 
     // Registrar radio
     async function registerRadio() {
       const marca = document.getElementById('reg_marca').value;
-      const modelo = document.getElementById('reg_modelo').value;
-      const serial = document.getElementById('reg_serial').value.trim();
+      const modelo = document.getElementById('reg_modelo').value.trim().toUpperCase();
+      const serial = document.getElementById('reg_serial').value.trim().toUpperCase();
       const codigo_id = document.getElementById('reg_codigo_id').value.trim() || null;
       const dependencia = document.getElementById('reg_dependencia').value || null;
       const observaciones = document.getElementById('reg_observaciones').value || null;
@@ -340,13 +391,12 @@
         return;
       }
 
-      // ✅ Verificar duplicados antes de insertar
+      // Verificar duplicados
       const { data: serialData, error: serialErr } = await supabase
         .from('radios')
         .select('serial')
         .eq('serial', serial)
         .single();
-      
       if (!serialErr) {
         document.getElementById('serial-message').textContent = '¡Este serial ya se encuentra registrado!';
         document.getElementById('serial-message').style.color = '#d32f2f';
@@ -366,7 +416,7 @@
         }
       }
 
-      // Obtener siguiente número por tipo
+      // Siguiente número por tipo
       const { data: radios } = await supabase
         .from('radios')
         .select('numero')
@@ -423,12 +473,12 @@
       }
     });
 
-    // ✅ Validación en tiempo real – CORREGIDA
+    // Validación en tiempo real – CORREGIDA
     let serialTimeout = null;
     let idTimeout = null;
 
     document.getElementById('reg_serial').addEventListener('input', function () {
-      const serial = this.value.trim();
+      const serial = this.value.trim().toUpperCase();
       const msgDiv = document.getElementById('serial-message');
       msgDiv.textContent = '';
       if (!serial) return;
@@ -472,7 +522,7 @@
     });
 
     // Eventos
-    document.getElementById('searchInput').addEventListener('input', loadRadios);
+    document.getElementById('searchInput').addEventListener('input', () => loadRadios(1));
     document.getElementById('registerBtn').addEventListener('click', registerRadio);
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
@@ -487,12 +537,12 @@
         tab.classList.add('active');
         const id = tab.getAttribute('data-tab');
         document.getElementById(id).classList.add('active');
-        if (id === 'consulta') loadRadios();
+        if (id === 'consulta') loadRadios(1);
       });
     });
 
     // Iniciar
-    loadRadios();
+    loadRadios(1);
   </script>
 </body>
 </html>
