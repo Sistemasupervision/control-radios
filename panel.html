@@ -73,92 +73,9 @@
       color: #1976d2;
       border-bottom: 3px solid #1976d2;
     }
-    .tab-content {
-      display: none;
+    #content-container {
+      min-height: 300px;
     }
-    .tab-content.active {
-      display: block;
-    }
-    .search-box {
-      margin-bottom: 20px;
-    }
-    #searchInput {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #90a4ae;
-      border-radius: 8px;
-      font-size: 15px;
-    }
-    .radio-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .radio-item {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .radio-info p {
-      margin: 4px 0;
-      font-size: 14px;
-    }
-    .radio-id {
-      font-weight: 600;
-      color: #1976d2;
-    }
-    .radio-serial {
-      font-family: monospace;
-      color: #0d47a1;
-    }
-    .radio-meta {
-      text-align: right;
-      min-width: 160px;
-      color: #666;
-      font-size: 13px;
-    }
-    .form-group {
-      margin-bottom: 18px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      color: #37474f;
-    }
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #90a4ae;
-      border-radius: 8px;
-      font-size: 15px;
-      color: #263238;
-    }
-    .message {
-      padding: 10px;
-      margin: 12px 0;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    .message.success { background: #e8f5e9; color: #2e7d32; }
-    .message.error { background: #ffebee; color: #c62828; }
-    .btn {
-      background: #1976d2;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 15px;
-    }
-    .btn:hover { background: #1565c0; }
-    .info-section p { margin: 12px 0; line-height: 1.5; }
-    hr { border: 0; border-top: 1px solid #e0e0e0; margin: 16px 0; }
   </style>
 </head>
 <body>
@@ -175,93 +92,15 @@
       <div class="tab" data-tab="registro">Registro</div>
       <div class="tab" data-tab="informacion">Información</div>
     </div>
-    <!-- Consulta -->
-    <div id="consulta" class="tab-content active">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Buscar por Serial o Código ID">
-      </div>
-      <div class="radio-list" id="radioList"></div>
-    </div>
-    <!-- Registro -->
-    <div id="registro" class="tab-content">
-      <div id="registro-message"></div>
-      <div class="form-group">
-        <label for="reg_marca">Marca *</label>
-        <select id="reg_marca" required>
-          <option value="">Seleccione</option>
-          <option value="MOTOROLA">MOTOROLA</option>
-          <option value="HYTERA">HYTERA</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="reg_modelo">Modelo *</label>
-        <input type="text" id="reg_modelo" placeholder="Ej: MTP850" required />
-      </div>
-      <div class="form-group">
-        <label for="reg_serial">Serial *</label>
-        <input type="text" id="reg_serial" placeholder="Único" required />
-        <div id="serial-message" style="margin-top: 6px; font-size: 13px; min-height: 20px;"></div>
-      </div>
-      <div class="form-group">
-        <label for="reg_codigo_id">Código ID</label>
-        <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123" />
-        <div id="id-message" style="margin-top: 6px; font-size: 13px; min-height: 20px;"></div>
-      </div>
-      <div class="form-group">
-        <label for="reg_dependencia">Dependencia</label>
-        <input type="text" id="reg_dependencia" placeholder="Ej: OTIC ZULIA" />
-      </div>
-      <div class="form-group">
-        <label for="reg_observaciones">Observaciones</label>
-        <input type="text" id="reg_observaciones" placeholder="Ej: TIPO C" />
-      </div>
-      <div class="form-group">
-        <label for="reg_tipo_equipo">Tipo de equipo *</label>
-        <select id="reg_tipo_equipo" required>
-          <option value="">Seleccione</option>
-          <option value="Portátil Motorola">Portátil Motorola</option>
-          <option value="Portátil Hytera">Portátil Hytera</option>
-          <option value="Móvil Motorola">Móvil Motorola</option>
-          <option value="Móvil Hytera">Móvil Hytera</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="reg_status">Estado *</label>
-        <select id="reg_status" required>
-          <option value="Operativo">Operativo</option>
-          <option value="Inoperativo">Inoperativo</option>
-        </select>
-      </div>
-      <div class="form-group" id="motivoGroup" style="display:none;">
-        <label for="reg_motivo">Motivo (si es inoperativo)</label>
-        <input type="text" id="reg_motivo" placeholder="Ej: Batería dañada" />
-      </div>
-      <button class="btn" id="registerBtn">Registrar Radio</button>
-    </div>
-    <!-- Información -->
-    <div id="informacion" class="tab-content">
-      <div class="info-section">
-        <h2 style="margin-bottom: 16px; color: #1976d2;">Sistema de Control de Radios</h2>
-        <p>Este sistema permite gestionar el inventario de equipos de comunicación del Cuerpo de Policía Nacional Bolivariana.</p>
-        <p><strong>Tipos de unidades registradas:</strong></p>
-        <ul style="margin-left: 20px; margin-bottom: 12px;">
-          <li>Portátiles Motorola MTP850</li>
-          <li>Portátiles Hytera</li>
-          <li>Móviles Motorola</li>
-          <li>Móviles Hytera</li>
-        </ul>
-        <p><strong>Soporte técnico:</strong> OTIC ZULIA</p>
-        <p><strong>Última actualización:</strong> Noviembre 2025</p>
-        <hr>
-        <p><small>© Todos los derechos reservados – Cuerpo de Policía Nacional Bolivariana</small></p>
-      </div>
-    </div>
+    <div id="content-container"></div>
   </div>
+
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
     // Verificar autenticación
     (async () => {
       try {
@@ -271,209 +110,44 @@
         window.location.href = 'index.html';
       }
     })();
-    // Cargar radios
-    async function loadRadios() {
-      const term = document.getElementById('searchInput').value.trim().toLowerCase();
-      let query = supabase
-        .from('radios')
-        .select('*')
-        .order('created_at', { ascending: true });
-      if (term) {
-        query = query.or(`serial.ilike.%${term}%,codigo_id.ilike.%${term}%`);
-      }
-      const { data, error } = await query;
-      const list = document.getElementById('radioList');
-      if (error) {
-        list.innerHTML = '<div class="message error">Error al cargar el inventario.</div>';
-        return;
-      }
-      list.innerHTML = data.map(r => `
-        <div class="radio-item">
-          <div class="radio-info">
-            <p><span class="radio-id">#${r.numero} • ${r.marca} ${r.modelo}</span></p>
-            <p class="radio-serial">Serial: ${r.serial}</p>
-            <p>ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
-            <p><strong>Status:</strong> ${r.status} ${r.motivo_inoperativo ? `– ${r.motivo_inoperativo}` : ''}</p>
-          </div>
-          <div class="radio-meta">
-            <p>${r.tipo_equipo}</p>
-            ${r.observaciones ? `<p>Obs: ${r.observaciones}</p>` : ''}
-            <p style="font-size:11px; color:#999;">${new Date(r.created_at).toLocaleString('es-VE')}</p>
-          </div>
-        </div>
-      `).join('');
-    }
-    // Registrar radio
-    async function registerRadio() {
-      const marca = document.getElementById('reg_marca').value;
-      const modelo = document.getElementById('reg_modelo').value;
-      const serial = document.getElementById('reg_serial').value.trim();
-      const codigo_id = document.getElementById('reg_codigo_id').value.trim() || null;
-      const dependencia = document.getElementById('reg_dependencia').value || null;
-      const observaciones = document.getElementById('reg_observaciones').value || null;
-      const tipo_equipo = document.getElementById('reg_tipo_equipo').value;
-      const status = document.getElementById('reg_status').value;
-      const motivo_inoperativo = status === 'Inoperativo' 
-        ? (document.getElementById('reg_motivo').value.trim() || null) 
-        : null;
-      const msg = document.getElementById('registro-message');
-      if (!marca || !modelo || !serial || !tipo_equipo || !status) {
-        msg.innerHTML = '<div class="message error">Campos con * obligatorios.</div>';
-        return;
-      }
-      if (status === 'Inoperativo' && !motivo_inoperativo) {
-        msg.innerHTML = '<div class="message error">Indique el motivo de inoperatividad.</div>';
-        return;
-      }
-      // ✅ Verificar duplicados antes de insertar
-      const { data: serialData, error: serialErr } = await supabase
-        .from('radios')
-        .select('serial')
-        .eq('serial', serial)
-        .single();
-      if (!serialErr) {
-        document.getElementById('serial-message').textContent = '¡Este serial ya se encuentra registrado!';
-        document.getElementById('serial-message').style.color = '#d32f2f';
-        return;
-      }
-      if (codigo_id) {
-        const { data: idData, error: idErr } = await supabase
-          .from('radios')
-          .select('codigo_id')
-          .eq('codigo_id', codigo_id)
-          .single();
-        if (!idErr) {
-          document.getElementById('id-message').textContent = '¡Este Código ID ya está en uso!';
-          document.getElementById('id-message').style.color = '#d32f2f';
-          return;
-        }
-      }
-      // ✅ CORRECCIÓN SEGURA: Manejo de nextNumero
-      let nextNumero = 1;
-      try {
-        const { data: radios, error } = await supabase
-          .from('radios')
-          .select('numero')
-          .eq('tipo_equipo', tipo_equipo)
-          .order('numero', { ascending: false })
-          .limit(1);
-        if (!error && radios && radios.length > 0) {
-          nextNumero = radios[0].numero + 1;
-        }
-      } catch (err) {
-        console.warn("Error al obtener el número secuencial. Usando 1.");
-      }
 
-      const { error } = await supabase
-        .from('radios')
-        .insert([{
-          numero: nextNumero,
-          marca,
-          modelo,
-          serial,
-          codigo_id,
-          dependencia,
-          observaciones,
-          tipo_equipo,
-          status,
-          motivo_inoperativo
-        }]);
-      if (error) {
-        msg.innerHTML = `<div class="message error">Error: ${error.message || 'No se pudo registrar.'}</div>`;
-      } else {
-        msg.innerHTML = '<div class="message success">✅ Registrado correctamente.</div>';
-        // Limpiar
-        document.getElementById('reg_marca').value = '';
-        document.getElementById('reg_modelo').value = '';
-        document.getElementById('reg_serial').value = '';
-        document.getElementById('reg_codigo_id').value = '';
-        document.getElementById('reg_dependencia').value = '';
-        document.getElementById('reg_observaciones').value = '';
-        document.getElementById('reg_tipo_equipo').value = '';
-        document.getElementById('reg_status').value = 'Operativo';
-        document.getElementById('reg_motivo').value = '';
-        document.getElementById('motivoGroup').style.display = 'none';
-        document.getElementById('serial-message').textContent = '';
-        document.getElementById('id-message').textContent = '';
-        setTimeout(() => msg.innerHTML = '', 4000);
-        loadRadios();
+    // Función para cargar contenido de una pestaña
+    async function loadTabContent(tabId) {
+      try {
+        const response = await fetch(`${tabId}.html`);
+        if (!response.ok) throw new Error(`No se encontró ${tabId}.html`);
+        const html = await response.text();
+        document.getElementById('content-container').innerHTML = html;
+
+        // Si es la pestaña de consulta, ejecutar su script inicial
+        if (tabId === 'consulta') {
+          if (typeof initConsulta !== 'undefined') initConsulta();
+          else loadRadios(); // si el script está embebido
+        }
+        // Aquí podrías inicializar cada módulo según la pestaña
+      } catch (err) {
+        document.getElementById('content-container').innerHTML = `<p style="color:#d32f2f;">Error al cargar ${tabId}: ${err.message}</p>`;
       }
     }
-    // Mostrar/ocultar motivo
-    document.getElementById('reg_status').addEventListener('change', () => {
-      const motivoGroup = document.getElementById('motivoGroup');
-      if (document.getElementById('reg_status').value === 'Inoperativo') {
-        motivoGroup.style.display = 'block';
-      } else {
-        motivoGroup.style.display = 'none';
-        document.getElementById('reg_motivo').value = '';
-      }
+
+    // Eventos de pestañas
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const tabId = tab.getAttribute('data-tab');
+        loadTabContent(tabId);
+      });
     });
-    // ✅ Validación en tiempo real – CORREGIDA
-    let serialTimeout = null;
-    let idTimeout = null;
-    document.getElementById('reg_serial').addEventListener('input', function () {
-      const serial = this.value.trim();
-      const msgDiv = document.getElementById('serial-message');
-      msgDiv.textContent = '';
-      if (!serial) return;
-      if (serialTimeout) clearTimeout(serialTimeout);
-      serialTimeout = setTimeout(async () => {
-        const { data, error } = await supabase
-          .from('radios')
-          .select('serial')
-          .eq('serial', serial)
-          .single();
-        if (error && error.code === 'PGRST116') {
-          msgDiv.textContent = '✅ Disponible';
-          msgDiv.style.color = '#2e7d32';
-        } else if (data) {
-          msgDiv.textContent = '¡Este serial ya se encuentra registrado!';
-          msgDiv.style.color = '#d32f2f';
-        }
-      }, 500);
-    });
-    document.getElementById('reg_codigo_id').addEventListener('input', function () {
-      const id = this.value.trim();
-      const msgDiv = document.getElementById('id-message');
-      msgDiv.textContent = '';
-      if (!id) return;
-      if (idTimeout) clearTimeout(idTimeout);
-      idTimeout = setTimeout(async () => {
-        const { data, error } = await supabase
-          .from('radios')
-          .select('codigo_id')
-          .eq('codigo_id', id)
-          .single();
-        if (error && error.code === 'PGRST116') {
-          msgDiv.textContent = '✅ Disponible';
-          msgDiv.style.color = '#2e7d32';
-        } else if (data) {
-          msgDiv.textContent = '¡Este Código ID ya está en uso!';
-          msgDiv.style.color = '#d32f2f';
-        }
-      }, 500);
-    });
-    // Eventos
-    document.getElementById('searchInput').addEventListener('input', loadRadios);
-    document.getElementById('registerBtn').addEventListener('click', registerRadio);
+
+    // Cerrar sesión
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
-    // Pestañas
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        const id = tab.getAttribute('data-tab');
-        document.getElementById(id).classList.add('active');
-        if (id === 'consulta') loadRadios();
-      });
-    });
-    // Iniciar
-    loadRadios();
+
+    // Cargar primera pestaña
+    loadTabContent('consulta');
   </script>
 </body>
 </html>
