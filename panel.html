@@ -312,28 +312,30 @@
       `).join('');
     }
 
-  async function registerRadio() {
+ async function registerRadio() {
   const marca = document.getElementById('reg_marca').value;
   const modelo = document.getElementById('reg_modelo').value;
-  const serial = document.getElementById('reg_serial').value;
-  const codigo_id = document.getElementById('reg_codigo_id').value || null;
+  const serial = document.getElementById('reg_serial').value.trim();
+  const codigo_id = document.getElementById('reg_codigo_id').value.trim() || null;
   const dependencia = document.getElementById('reg_dependencia').value || null;
   const observaciones = document.getElementById('reg_observaciones').value || null;
   const tipo_equipo = document.getElementById('reg_tipo_equipo').value;
   const status = document.getElementById('reg_status').value;
   const motivo_inoperativo = status === 'Inoperativo' 
-    ? (document.getElementById('reg_motivo').value || null) 
+    ? (document.getElementById('reg_motivo').value.trim() || null) 
     : null;
 
   const msg = document.getElementById('registro-message');
+
+  // Validación básica
   if (!marca || !modelo || !serial || !tipo_equipo || !status) {
-    msg.innerHTML = '<div class="message error">Campos con * obligatorios.</div>';
+    msg.innerHTML = '<div class="message error">Campos con * son obligatorios.</div>';
     return;
   }
 
-  // Validar que si es inoperativo, se pida motivo (opcional, pero recomendado)
+  // Si es inoperativo, pedir motivo (opcional, pero recomendado)
   if (status === 'Inoperativo' && !motivo_inoperativo) {
-    msg.innerHTML = '<div class="message error">Por favor, indique el motivo de inoperatividad.</div>';
+    msg.innerHTML = '<div class="message error">Indique el motivo de inoperatividad.</div>';
     return;
   }
 
@@ -347,26 +349,41 @@
 
   const nextNumero = radios.length > 0 ? radios[0].numero + 1 : 1;
 
+  // Intentar insertar
   const { error } = await supabase
     .from('radios')
-    .insert([{ 
-      numero: nextNumero, 
-      marca, 
-      modelo, 
-      serial, 
-      codigo_id, 
-      dependencia, 
-      observaciones, 
+    .insert([{
+      numero: nextNumero,
+      marca,
+      modelo,
+      serial,
+      codigo_id,
+      dependencia,
+      observaciones,
       tipo_equipo,
       status,
       motivo_inoperativo
     }]);
 
   if (error) {
-    msg.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
+    console.error('Error de registro:', error);
+
+    // Mensaje personalizado para serial duplicado
+    if (error.message && error.message.includes('radios_serial_key')) {
+      msg.innerHTML = '<div class="message error">¡Este serial ya se encuentra registrado!</div>';
+    }
+    // Mensaje para codigo_id duplicado
+    else if (error.message && error.message.includes('unique_codigo_id')) {
+      msg.innerHTML = '<div class="message error">¡Este Código ID ya está en uso!</div>';
+    }
+    // Otros errores
+    else {
+      msg.innerHTML = `<div class="message error">Error: ${error.message || 'No se pudo registrar.'}</div>`;
+    }
   } else {
-    msg.innerHTML = '<div class="message success">✅ Registrado correctamente.</div>';
-    // Reset
+    msg.innerHTML = '<div class="message success">✅ Radio registrado correctamente.</div>';
+    
+    // Limpiar formulario
     document.getElementById('reg_marca').value = '';
     document.getElementById('reg_modelo').value = '';
     document.getElementById('reg_serial').value = '';
@@ -377,8 +394,9 @@
     document.getElementById('reg_status').value = 'Operativo';
     document.getElementById('reg_motivo').value = '';
     document.getElementById('motivoGroup').style.display = 'none';
+    
     setTimeout(() => msg.innerHTML = '', 4000);
-    loadRadios(); // recargar lista
+    loadRadios(); // Recargar lista
   }
 }
 
