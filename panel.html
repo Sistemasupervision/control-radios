@@ -73,97 +73,8 @@
       color: #1976d2;
       border-bottom: 3px solid #1976d2;
     }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    .search-box {
-      margin-bottom: 20px;
-    }
-    #searchInput {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #90a4ae;
-      border-radius: 8px;
-      font-size: 15px;
-    }
-    .radio-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .radio-item {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .radio-info p {
-      margin: 4px 0;
-      font-size: 14px;
-    }
-    .radio-id {
-      font-weight: 600;
-      color: #1976d2;
-    }
-    .radio-serial {
-      font-family: monospace;
-      color: #0d47a1;
-    }
-    .radio-meta {
-      text-align: right;
-      min-width: 160px;
-      color: #666;
-      font-size: 13px;
-    }
-    .form-group {
-      margin-bottom: 18px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      color: #37474f;
-    }
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #90a4ae;
-      border-radius: 8px;
-      font-size: 15px;
-      color: #263238;
-    }
-    .message {
-      padding: 10px;
-      margin: 12px 0;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    .message.success { background: #e8f5e9; color: #2e7d32; }
-    .message.error { background: #ffebee; color: #c62828; }
-    .btn {
-      background: #1976d2;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 15px;
-    }
-    .btn:hover { background: #1565c0; }
-    .info-section p { margin: 12px 0; line-height: 1.5; }
-    hr { border: 0; border-top: 1px solid #e0e0e0; margin: 16px 0; }
-    #pagination {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 20px;
+    #content-container {
+      min-height: 300px;
     }
   </style>
 </head>
@@ -176,113 +87,16 @@
       </div>
       <button class="logout-btn" id="logoutBtn">Salir</button>
     </div>
-
     <div class="tabs">
       <div class="tab active" data-tab="consulta">Consulta</div>
       <div class="tab" data-tab="registro">Registro</div>
       <div class="tab" data-tab="informacion">Información</div>
     </div>
-
-    <!-- Consulta -->
-    <div id="consulta" class="tab-content active">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Buscar por Serial o Código ID">
-      </div>
-      <div class="radio-list" id="radioList"></div>
-      <div id="pagination"></div>
-    </div>
-
-    <!-- Registro -->
-    <div id="registro" class="tab-content">
-      <div id="registro-message"></div>
-      <div class="form-group">
-        <label for="reg_marca">Marca *</label>
-        <select id="reg_marca" required>
-          <option value="">Seleccione</option>
-          <option value="MOTOROLA">MOTOROLA</option>
-          <option value="HYTERA">HYTERA</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="reg_modelo">Modelo *</label>
-        <input type="text" id="reg_modelo" placeholder="Ej: MTP850" required 
-               oninput="this.value = this.value.toUpperCase()" style="text-transform: uppercase;" />
-      </div>
-      <div class="form-group">
-        <label for="reg_serial">Serial *</label>
-        <input type="text" id="reg_serial" placeholder="Único" required 
-               oninput="this.value = this.value.toUpperCase()" style="text-transform: uppercase;" />
-        <div id="serial-message" style="margin-top: 6px; font-size: 13px; min-height: 20px;"></div>
-      </div>
-      <div class="form-group">
-        <label for="reg_codigo_id">Código ID (máx. 8 dígitos)</label>
-        <input type="text" id="reg_codigo_id" placeholder="Ej: 10230123"
-               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8)"
-               maxlength="8"
-               inputmode="numeric" />
-        <div id="id-message" style="margin-top: 6px; font-size: 13px; min-height: 20px;"></div>
-      </div>
-      <div class="form-group">
-        <label for="reg_dependencia">Dependencia</label>
-        <input type="text" id="reg_dependencia" placeholder="Ej: OTIC ZULIA" />
-      </div>
-      <div class="form-group">
-        <label for="reg_observaciones">Observaciones</label>
-        <input type="text" id="reg_observaciones" placeholder="Ej: TIPO C" />
-      </div>
-      <div class="form-group">
-        <label for="reg_tipo_equipo">Tipo de equipo *</label>
-        <select id="reg_tipo_equipo" required>
-          <option value="">Seleccione</option>
-          <option value="Portátil Motorola">Portátil Motorola</option>
-          <option value="Portátil Hytera">Portátil Hytera</option>
-          <option value="Móvil Motorola">Móvil Motorola</option>
-          <option value="Móvil Hytera">Móvil Hytera</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="reg_status">Estado *</label>
-        <select id="reg_status" required>
-          <option value="Operativo">Operativo</option>
-          <option value="Inoperativo">Inoperativo</option>
-          <option value="Extraviado">Extraviado</option>
-        </select>
-      </div>
-      <div class="form-group" id="motivoGroup" style="display:none;">
-        <label for="reg_motivo">Motivo (si es inoperativo)</label>
-        <input type="text" id="reg_motivo" placeholder="Ej: Batería dañada" />
-      </div>
-      <button class="btn" id="registerBtn">Registrar Radio</button>
-    </div>
-
-    <!-- Información -->
-    <div id="informacion" class="tab-content">
-      <div class="info-section">
-        <h2 style="margin-bottom: 16px; color: #1976d2;">Resumen del Inventario</h2>
-        <div id="resumen-contadores">
-          <p>Cargando resumen...</p>
-        </div>
-        <hr>
-        <h3 style="margin: 20px 0 12px; color: #0d47a1;">Sistema de Control de Radios</h3>
-        <p>Este sistema permite gestionar el inventario de equipos de comunicación del Cuerpo de Policía Nacional Bolivariana.</p>
-        <p><strong>Tipos de unidades registradas:</strong></p>
-        <ul style="margin-left: 20px; margin-bottom: 12px;">
-          <li>Portátiles Motorola MTP850</li>
-          <li>Portátiles Hytera</li>
-          <li>Móviles Motorola</li>
-          <li>Móviles Hytera</li>
-        </ul>
-        <p><strong>Soporte técnico:</strong> OTIC ZULIA</p>
-        <p><strong>Última actualización:</strong> Noviembre 2025</p>
-        <hr>
-        <p><small>© Todos los derechos reservados – Cuerpo de Policía Nacional Bolivariana</small></p>
-      </div>
-    </div>
+    <div id="content-container"></div>
   </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
     const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -297,292 +111,43 @@
       }
     })();
 
-    // === CONSULTA ===
-    let currentPage = 1;
-    const itemsPerPage = 10;
+    // Función para cargar contenido de una pestaña
+    async function loadTabContent(tabId) {
+      try {
+        const response = await fetch(`${tabId}.html`);
+        if (!response.ok) throw new Error(`No se encontró ${tabId}.html`);
+        const html = await response.text();
+        document.getElementById('content-container').innerHTML = html;
 
-    function getStatusStyle(status) {
-      switch (status) {
-        case 'Operativo': return 'color:#2e7d32; font-weight:bold;';
-        case 'Inoperativo': return 'color:#0d47a1; font-weight:bold;';
-        case 'Extraviado': return 'color:#d32f2f; font-weight:bold;';
-        default: return '';
-      }
-    }
-
-    async function loadRadios(page = 1) {
-      const term = document.getElementById('searchInput').value.trim().toLowerCase();
-      let query = supabase
-        .from('radios')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: true });
-
-      if (term) {
-        query = query.or(`serial.ilike.%${term}%,codigo_id.ilike.%${term}%`);
-      }
-
-      const from = (page - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
-
-      const { data, error, count } = await query.range(from, to);
-      const list = document.getElementById('radioList');
-      const pagination = document.getElementById('pagination');
-
-      if (error) {
-        list.innerHTML = '<div class="message error">Error al cargar el inventario.</div>';
-        pagination.innerHTML = '';
-        return;
-      }
-
-      list.innerHTML = data.map(r => {
-        const statusStyle = getStatusStyle(r.status);
-        return `
-          <div class="radio-item">
-            <div class="radio-info">
-              <p><span class="radio-id">#${r.numero} • ${r.marca} ${r.modelo}</span></p>
-              <p class="radio-serial">Serial: ${r.serial}</p>
-              <p>ID: ${r.codigo_id || '—'} | Dependencia: ${r.dependencia || '—'}</p>
-              <p><strong>Status:</strong> <span style="${statusStyle}">${r.status}</span> ${r.motivo_inoperativo ? `– ${r.motivo_inoperativo}` : ''}</p>
-            </div>
-            <div class="radio-meta">
-              <p>${r.tipo_equipo}</p>
-              ${r.observaciones ? `<p>Obs: ${r.observaciones}</p>` : ''}
-              <p style="font-size:11px; color:#999;">${new Date(r.created_at).toLocaleString('es-VE')}</p>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      renderPagination(count || 0, page);
-    }
-
-    function renderPagination(total, page) {
-      const totalPages = Math.ceil(total / itemsPerPage);
-      const container = document.getElementById('pagination');
-
-      if (totalPages <= 1) {
-        container.style.display = 'none';
-        return;
-      }
-
-      container.style.display = 'flex';
-      let html = '';
-      if (page > 1) {
-        html += `<button class="btn" onclick="window.changePage(${page - 1})">Anterior</button>`;
-      }
-      html += `<span style="align-self:center; margin:0 10px;">Página ${page} de ${totalPages}</span>`;
-      if (page < totalPages) {
-        html += `<button class="btn" onclick="window.changePage(${page + 1})">Siguiente</button>`;
-      }
-      container.innerHTML = html;
-    }
-
-    window.changePage = function(page) {
-      currentPage = page;
-      loadRadios(page);
-    };
-
-    // === RESUMEN ===
-    async function loadResumen() {
-      const { data, error } = await supabase
-        .from('radios')
-        .select('status');
-
-      if (error) {
-        document.getElementById('resumen-contadores').innerHTML = '<p class="message error">Error al cargar el resumen.</p>';
-        return;
-      }
-
-      const total = data.length;
-      const operativos = data.filter(r => r.status === 'Operativo').length;
-      const inoperativos = data.filter(r => r.status === 'Inoperativo').length;
-      const extraviados = data.filter(r => r.status === 'Extraviado').length;
-
-      document.getElementById('resumen-contadores').innerHTML = `
-        <p><strong>Total de radios registrados:</strong> ${total}</p>
-        <p style="color:#2e7d32;"><strong>• Operativos:</strong> ${operativos}</p>
-        <p style="color:#0d47a1;"><strong>• Inoperativos:</strong> ${inoperativos}</p>
-        <p style="color:#d32f2f;"><strong>• Extraviados:</strong> ${extraviados}</p>
-      `;
-    }
-
-    // === REGISTRO ===
-    async function registerRadio() {
-      const marca = document.getElementById('reg_marca').value;
-      const modelo = document.getElementById('reg_modelo').value.trim().toUpperCase();
-      const serial = document.getElementById('reg_serial').value.trim().toUpperCase();
-      const codigo_id = document.getElementById('reg_codigo_id').value.trim() || null;
-      const dependencia = document.getElementById('reg_dependencia').value || null;
-      const observaciones = document.getElementById('reg_observaciones').value || null;
-      const tipo_equipo = document.getElementById('reg_tipo_equipo').value;
-      const status = document.getElementById('reg_status').value;
-      const motivo_inoperativo = status === 'Inoperativo' 
-        ? (document.getElementById('reg_motivo').value.trim() || null) 
-        : null;
-
-      const msg = document.getElementById('registro-message');
-      if (!marca || !modelo || !serial || !tipo_equipo || !status) {
-        msg.innerHTML = '<div class="message error">Campos con * obligatorios.</div>';
-        return;
-      }
-      if (status === 'Inoperativo' && !motivo_inoperativo) {
-        msg.innerHTML = '<div class="message error">Indique el motivo de inoperatividad.</div>';
-        return;
-      }
-
-      // Verificar duplicados
-      const {  serialData, error: serialErr } = await supabase
-        .from('radios')
-        .select('serial')
-        .eq('serial', serial)
-        .single();
-      if (!serialErr) {
-        document.getElementById('serial-message').textContent = '¡Este serial ya se encuentra registrado!';
-        document.getElementById('serial-message').style.color = '#d32f2f';
-        return;
-      }
-
-      if (codigo_id) {
-        const {  idData, error: idErr } = await supabase
-          .from('radios')
-          .select('codigo_id')
-          .eq('codigo_id', codigo_id)
-          .single();
-        if (!idErr) {
-          document.getElementById('id-message').textContent = '¡Este Código ID ya está en uso!';
-          document.getElementById('id-message').style.color = '#d32f2f';
-          return;
+        // Si es la pestaña de consulta, ejecutar su script inicial
+        if (tabId === 'consulta') {
+          if (typeof initConsulta !== 'undefined') initConsulta();
+          else loadRadios(); // si el script está embebido
         }
-      }
-
-      // Siguiente número por tipo
-      const {  radios } = await supabase
-        .from('radios')
-        .select('numero')
-        .eq('tipo_equipo', tipo_equipo)
-        .order('numero', { ascending: false })
-        .limit(1);
-      const nextNumero = radios.length > 0 ? radios[0].numero + 1 : 1;
-
-      const { error } = await supabase
-        .from('radios')
-        .insert([{
-          numero: nextNumero,
-          marca,
-          modelo,
-          serial,
-          codigo_id,
-          dependencia,
-          observaciones,
-          tipo_equipo,
-          status,
-          motivo_inoperativo
-        }]);
-
-      if (error) {
-        msg.innerHTML = `<div class="message error">Error: ${error.message || 'No se pudo registrar.'}</div>`;
-      } else {
-        msg.innerHTML = '<div class="message success">✅ Registrado correctamente.</div>';
-        // Limpiar
-        document.getElementById('reg_marca').value = '';
-        document.getElementById('reg_modelo').value = '';
-        document.getElementById('reg_serial').value = '';
-        document.getElementById('reg_codigo_id').value = '';
-        document.getElementById('reg_dependencia').value = '';
-        document.getElementById('reg_observaciones').value = '';
-        document.getElementById('reg_tipo_equipo').value = '';
-        document.getElementById('reg_status').value = 'Operativo';
-        document.getElementById('reg_motivo').value = '';
-        document.getElementById('motivoGroup').style.display = 'none';
-        document.getElementById('serial-message').textContent = '';
-        document.getElementById('id-message').textContent = '';
-        setTimeout(() => msg.innerHTML = '', 4000);
-        loadRadios(1);
+        // Aquí podrías inicializar cada módulo según la pestaña
+      } catch (err) {
+        document.getElementById('content-container').innerHTML = `<p style="color:#d32f2f;">Error al cargar ${tabId}: ${err.message}</p>`;
       }
     }
 
-    // Mostrar/ocultar motivo
-    document.getElementById('reg_status').addEventListener('change', () => {
-      const motivoGroup = document.getElementById('motivoGroup');
-      if (document.getElementById('reg_status').value === 'Inoperativo') {
-        motivoGroup.style.display = 'block';
-      } else {
-        motivoGroup.style.display = 'none';
-        document.getElementById('reg_motivo').value = '';
-      }
+    // Eventos de pestañas
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const tabId = tab.getAttribute('data-tab');
+        loadTabContent(tabId);
+      });
     });
 
-    // Validación en tiempo real
-    let serialTimeout = null;
-    let idTimeout = null;
-
-    document.getElementById('reg_serial').addEventListener('input', function () {
-      const serial = this.value.trim().toUpperCase();
-      const msgDiv = document.getElementById('serial-message');
-      msgDiv.textContent = '';
-      if (!serial) return;
-      if (serialTimeout) clearTimeout(serialTimeout);
-      serialTimeout = setTimeout(async () => {
-        const { data, error } = await supabase
-          .from('radios')
-          .select('*')
-          .eq('serial', serial)
-          .single();
-        if (error && error.code === 'PGRST116') {
-          msgDiv.textContent = '✅ Disponible';
-          msgDiv.style.color = '#2e7d32';
-        } else if (data) {
-          msgDiv.textContent = '¡Este serial ya se encuentra registrado!';
-          msgDiv.style.color = '#d32f2f';
-        }
-      }, 500);
-    });
-
-    document.getElementById('reg_codigo_id').addEventListener('input', function () {
-      const id = this.value.trim();
-      const msgDiv = document.getElementById('id-message');
-      msgDiv.textContent = '';
-      if (!id) return;
-      if (idTimeout) clearTimeout(idTimeout);
-      idTimeout = setTimeout(async () => {
-        const { data, error } = await supabase
-          .from('radios')
-          .select('codigo_id')
-          .eq('codigo_id', id)
-          .single();
-        if (error && error.code === 'PGRST116') {
-          msgDiv.textContent = '✅ Disponible';
-          msgDiv.style.color = '#2e7d32';
-        } else if (data) {
-          msgDiv.textContent = '¡Este Código ID ya está en uso!';
-          msgDiv.style.color = '#d32f2f';
-        }
-      }, 500);
-    });
-
-    // Eventos
-    document.getElementById('searchInput').addEventListener('input', () => loadRadios(1));
-    document.getElementById('registerBtn').addEventListener('click', registerRadio);
+    // Cerrar sesión
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
-    // Pestañas
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        const id = tab.getAttribute('data-tab');
-        document.getElementById(id).classList.add('active');
-        if (id === 'consulta') loadRadios(1);
-        if (id === 'informacion') loadResumen();
-      });
-    });
-
-    // Iniciar
-    loadRadios(1);
+    // Cargar primera pestaña
+    loadTabContent('consulta');
   </script>
 </body>
 </html>
