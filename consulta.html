@@ -121,9 +121,11 @@
         <button class="logout-btn" id="logoutBtn">Salir</button>
       </div>
     </div>
-    <!-- ✅ Pestañas dinámicas -->
-    <div class="tabs" id="dynamicTabs"></div>
-    <!-- ✅ Botón de exportación -->
+    <!-- Pestañas dinámicas -->
+    <div class="tabs" id="dynamicTabs">
+      <!-- Se llenará con JavaScript -->
+    </div>
+    <!-- ✅ Nuevo botón de exportación -->
     <button class="export-btn" onclick="exportarAExcel()">📥 Exportar a Excel</button>
     <!-- Búsqueda -->
     <div class="search-section">
@@ -171,7 +173,7 @@
     let currentPage = 1;
     const ITEMS_PER_PAGE = 10;
 
-    // ✅ Configurar pestañas dinámicas
+    // ✅ Configurar pestañas según rol
     function configurarPestanas(rol) {
       const tabsContainer = document.getElementById('dynamicTabs');
       if (!tabsContainer) return;
@@ -193,27 +195,27 @@
       tabsContainer.innerHTML = tabsHTML;
     }
 
-    // ✅ Función de exportación
+    // ✅ Función de exportación a Excel
     function exportarAExcel() {
       if (!allRadios || allRadios.length === 0) {
         alert('No hay datos para exportar.');
         return;
       }
-      const datosParaExcel = allRadios.map(radio => ({
-        'Número de Serie': radio.serial || '',
-        'Código ID': radio.codigo_id || '',
-        'Marca': radio.marca || '',
-        'Modelo': radio.modelo || '',
-        'Tipo de Radio': radio.tipo || '',
-        'Dependencia': radio.dependencia || '',
-        'Posee Tipo C': radio.tipo_c || '',
-        'Estado': radio.estado || '',
-        'Motivo': radio.estado === 'Inoperativo' ? (radio.motivo_inoperativo || '') :
-                 radio.estado === 'Extraviado' ? (radio.motivo_extraviado || '') : '',
-        'Observaciones': radio.observaciones || '',
-        'Registrado': radio.created_at ? new Date(radio.created_at).toLocaleString('es-VE') : ''
+      const datos = allRadios.map(r => ({
+        'Número de Serie': r.serial || '',
+        'Código ID': r.codigo_id || '',
+        'Marca': r.marca || '',
+        'Modelo': r.modelo || '',
+        'Tipo de Radio': r.tipo || '',
+        'Dependencia': r.dependencia || '',
+        'Posee Tipo C': r.tipo_c || '',
+        'Estado': r.estado || '',
+        'Motivo': r.estado === 'Inoperativo' ? (r.motivo_inoperativo || '') :
+                 r.estado === 'Extraviado' ? (r.motivo_extraviado || '') : '',
+        'Observaciones': r.observaciones || '',
+        'Registrado': r.created_at ? new Date(r.created_at).toLocaleString('es-VE') : ''
       }));
-      const worksheet = XLSX.utils.json_to_sheet(datosParaExcel);
+      const worksheet = XLSX.utils.json_to_sheet(datos);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Radios CPNB');
       XLSX.writeFile(workbook, 'radios_cpn_bolivariana.xlsx');
@@ -267,7 +269,7 @@
         <tr data-id="${r.id}">
           <td><strong>${r.serial || '—'}</strong></td>
           <td>${r.codigo_id || '—'}</td>
-          <td>${r.tipo || '—'}</td> <!-- Nombre completo -->
+          <td>${r.tipo.split(' ')[0] || '—'}</td>
           <td>${r.marca || '—'}</td>
           <td>${r.modelo || '—'}</td>
           <td>${(r.dependencia || '').substring(0,12)}${r.dependencia?.length > 12 ? '…' : ''}</td>
@@ -292,7 +294,6 @@
       document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
     }
 
-    // Cargar datos
     async function cargarTodosLosRadios() {
       const loading = document.getElementById('loadingAll');
       const container = document.getElementById('allRadiosContainer');
@@ -320,7 +321,6 @@
       }
     }
 
-    // Búsqueda
     async function buscarRadio(query) {
       const msg = document.getElementById('message');
       const searchRes = document.getElementById('searchResult');
@@ -364,10 +364,10 @@
       }
     }
 
-    // ✅ Inicialización
+    // Inicialización
     (async () => {
       try {
-        const {  { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           window.location.href = 'index.html';
           return;
@@ -380,7 +380,7 @@
         userRol = perfil?.rol || 'consultor';
         configurarPestanas(userRol);
         await cargarTodosLosRadios();
-        // Redirigir si consultor entra a página restringida
+
         const currentPageName = window.location.pathname.split('/').pop();
         if (userRol === 'consultor' && ['registro.html', 'modificaciones.html'].includes(currentPageName)) {
           window.location.href = 'panel.html';
@@ -391,13 +391,11 @@
       }
     })();
 
-    // Salir
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
-    // Eventos
     document.getElementById('prevPage').addEventListener('click', () => {
       if (currentPage > 1) {
         currentPage--;
