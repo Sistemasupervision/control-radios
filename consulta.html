@@ -156,7 +156,7 @@
     th, td {
       padding: 12px;
       text-align: left;
-      font-size: 14px;
+      font-size: 13px;
     }
     th {
       background: #e3f2fd;
@@ -252,14 +252,17 @@
       <table>
         <thead>
           <tr>
+            <th>Fecha</th>
             <th>Marca</th>
             <th>Modelo</th>
             <th>Tipo</th>
             <th>Serie</th>
             <th>ID</th>
             <th>Dependencia</th>
+            <th>Tipo C</th>
             <th>Estado</th>
-            <th>Fecha</th>
+            <th>Observaciones</th>
+            <th>Motivo</th>
           </tr>
         </thead>
         <tbody id="searchResultBody"></tbody>
@@ -280,6 +283,7 @@
             <th>Serie</th>
             <th>ID</th>
             <th>Dependencia</th>
+            <th>Tipo C</th>
             <th>Estado</th>
           </tr>
         </thead>
@@ -304,7 +308,6 @@
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Estado global
     let allRadios = [];
     let currentPage = 1;
     const ITEMS_PER_PAGE = 10;
@@ -351,13 +354,12 @@
       return `<span class="${cls}">${estado}</span>`;
     }
 
-    // Renderizar página actual
+    // Renderizar página
     function renderPage(page) {
       const start = (page - 1) * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE;
       const pageData = allRadios.slice(start, end);
       const tbody = document.getElementById('allRadiosBody');
-      const pageInfo = document.getElementById('pageInfo');
       const totalPages = Math.ceil(allRadios.length / ITEMS_PER_PAGE);
 
       tbody.innerHTML = pageData.map(r => `
@@ -369,17 +371,17 @@
           <td>${r.serial || '—'}</td>
           <td>${r.codigo_id || '—'}</td>
           <td>${r.dependencia || '—'}</td>
+          <td>${r.tipo_c || '—'}</td>
           <td>${getEstadoHTML(r.estado)}</td>
         </tr>
       `).join('');
 
-      pageInfo.textContent = `Página ${page} de ${totalPages || 1}`;
-
+      document.getElementById('pageInfo').textContent = `Página ${page} de ${totalPages || 1}`;
       document.getElementById('prevPage').disabled = page === 1;
       document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
     }
 
-    // Cargar todos los radios (una sola vez)
+    // Cargar todos los radios
     async function cargarTodosLosRadios() {
       const loading = document.getElementById('loadingAll');
       const container = document.getElementById('allRadiosContainer');
@@ -411,7 +413,7 @@
       }
     }
 
-    // Buscar radio (sin paginación)
+    // Buscar radio
     async function buscarRadio(query) {
       const msg = document.getElementById('message');
       const searchRes = document.getElementById('searchResult');
@@ -444,14 +446,20 @@
           msg.textContent = '';
           tbody.innerHTML = data.map(r => `
             <tr>
+              <td>${formatDate(r.created_at)}</td>
               <td>${r.marca || '—'}</td>
               <td>${r.modelo || '—'}</td>
               <td>${r.tipo || '—'}</td>
               <td>${r.serial || '—'}</td>
               <td>${r.codigo_id || '—'}</td>
               <td>${r.dependencia || '—'}</td>
+              <td>${r.tipo_c || '—'}</td>
               <td>${getEstadoHTML(r.estado)}</td>
-              <td>${formatDate(r.created_at)}</td>
+              <td>${r.observaciones || '—'}</td>
+              <td>${
+                r.estado === 'Inoperativo' && r.motivo_inoperativo ? r.motivo_inoperativo :
+                r.estado === 'Extraviado' && r.motivo_extraviado ? r.motivo_extraviado : '—'
+              }</td>
             </tr>
           `).join('');
           searchRes.style.display = 'block';
@@ -503,7 +511,7 @@
       }
     });
 
-    // Cargar datos al inicio
+    // Cargar al inicio
     cargarTodosLosRadios();
   </script>
 </body>
