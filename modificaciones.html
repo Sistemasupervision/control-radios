@@ -6,6 +6,7 @@
   <title>Modificaciones | Control de Radios</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* ... (igual que antes) ... */
     * {
       margin: 0;
       padding: 0;
@@ -109,7 +110,6 @@
       background: white;
       box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
     }
-
     .search-section {
       display: flex;
       gap: 12px;
@@ -136,7 +136,6 @@
     .search-btn:hover {
       background: #1565c0;
     }
-
     .form-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -237,29 +236,19 @@
         <button class="logout-btn" id="logoutBtn">Salir</button>
       </div>
     </div>
-
-    <div class="tabs">
-      <a href="consulta.html" class="tab-link">🔍 Consulta</a>
-      <a href="registro.html" class="tab-link">➕ Registro</a>
-      <a href="modificaciones.html" class="tab-link active">✏️ Modificaciones</a>
-      <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+    <div class="tabs" id="dynamicTabs">
+      <!-- Se llenará con JavaScript -->
     </div>
-
-    <!-- Búsqueda o carga por ID -->
     <div class="search-section" id="searchSection">
       <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID para modificar...">
       <button class="search-btn" id="searchBtn">Buscar</button>
     </div>
     <div id="loadingMessage" style="display: none;">Cargando radio...</div>
-
     <div class="message" id="message"></div>
     <div class="no-result" id="noResult" style="display: none;">Ningún radio cargado. Busque uno para editar.</div>
-
-    <!-- Formulario de edición -->
     <form id="editForm" style="display: none;">
       <div class="form-container">
         <input type="hidden" id="radioId">
-
         <div class="form-group">
           <label for="marca">Marca *</label>
           <select id="marca" class="form-control" required>
@@ -267,12 +256,10 @@
             <option value="Hytera">Hytera</option>
           </select>
         </div>
-
         <div class="form-group">
           <label for="modelo">Modelo *</label>
           <input type="text" id="modelo" class="form-control" placeholder="Ej: MTP850" required maxlength="50">
         </div>
-
         <div class="form-group">
           <label for="tipo">Tipo de Radio *</label>
           <select id="tipo" class="form-control" required>
@@ -282,24 +269,20 @@
             <option value="Móvil Hytera">Móvil Hytera</option>
           </select>
         </div>
-
         <div class="form-group">
           <label for="serial">Número de Serie *</label>
           <input type="text" id="serial" class="form-control" placeholder="Ej: ABC123456" required maxlength="50">
           <div id="serial-error" class="error-text"></div>
         </div>
-
         <div class="form-group">
           <label for="codigo_id">Código ID *</label>
           <input type="text" id="codigo_id" class="form-control" placeholder="Máximo 8 dígitos" required maxlength="8">
           <div id="codigo-error" class="error-text"></div>
         </div>
-
         <div class="form-group">
           <label for="dependencia">Dependencia</label>
           <input type="text" id="dependencia" class="form-control" placeholder="Ej: Coordinación Zulia">
         </div>
-
         <div class="form-group">
           <label for="tipo_c">¿Posee Tipo C? *</label>
           <select id="tipo_c" class="form-control" required>
@@ -307,12 +290,10 @@
             <option value="No">No</option>
           </select>
         </div>
-
         <div class="form-group">
           <label for="observaciones">Observaciones</label>
           <textarea id="observaciones" class="form-control" rows="2" placeholder="Notas generales..."></textarea>
         </div>
-
         <div class="form-group">
           <label for="status">Estado *</label>
           <select id="status" class="form-control" required>
@@ -321,17 +302,14 @@
             <option value="Extraviado">Extraviado</option>
           </select>
         </div>
-
         <div id="motivoInoperativo" class="form-group conditional-field">
           <label for="motivo_inoperativo">Motivo (Inoperativo)</label>
           <textarea id="motivo_inoperativo" class="form-control" rows="2" placeholder="Ej: Batería dañada"></textarea>
         </div>
-
         <div id="motivoExtraviado" class="form-group conditional-field">
           <label for="motivo_extraviado">Motivo (Extraviado)</label>
           <textarea id="motivo_extraviado" class="form-control" rows="2" placeholder="Ej: Robo en operativo"></textarea>
         </div>
-
         <div class="form-group" style="grid-column: span 2; display: flex; gap: 12px;">
           <button type="submit" class="btn btn-save">💾 Guardar Cambios</button>
           <button type="button" class="btn btn-delete" id="deleteBtn">🗑️ Eliminar Radio</button>
@@ -339,7 +317,6 @@
       </div>
     </form>
   </div>
-
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
@@ -347,21 +324,60 @@
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     let currentRadioId = null;
+    let userRol = 'consultor';
 
-    // Autenticación
+    function configurarPestanas(rol) {
+      const tabsContainer = document.getElementById('dynamicTabs');
+      if (!tabsContainer) return;
+      let tabsHTML = '';
+      if (rol === 'administrador') {
+        tabsHTML = `
+          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+          <a href="registro.html" class="tab-link">➕ Registro</a>
+          <a href="modificaciones.html" class="tab-link active">✏️ Modificaciones</a>
+          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+        `;
+      } else {
+        tabsHTML = `
+          <a href="panel.html" class="tab-link">📊 Panel</a>
+          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+        `;
+      }
+      tabsContainer.innerHTML = tabsHTML;
+    }
+
     (async () => {
       try {
-        const { data } = await supabase.auth.getUser();
-        if (!data.user) window.location.href = 'index.html';
-      } catch (err) {
-        window.location.href = 'index.html';
-      }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          window.location.href = 'index.html';
+          return;
+        }
 
-      // Verificar si hay ?id=... en la URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const id = urlParams.get('id');
-      if (id) {
-        await cargarRadioPorId(id);
+        const { data: perfil, error } = await supabase
+          .from('perfiles')
+          .select('rol')
+          .eq('id', user.id)
+          .single();
+
+        userRol = perfil?.rol || 'consultor';
+
+        if (userRol === 'consultor') {
+          window.location.href = 'panel.html';
+          return;
+        }
+
+        configurarPestanas(userRol);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        if (id) {
+          await cargarRadioPorId(id);
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        window.location.href = 'index.html';
       }
     })();
 
@@ -370,22 +386,15 @@
       window.location.href = 'index.html';
     });
 
-    const currentPageUrl = window.location.pathname.split('/').pop();
-    document.querySelectorAll('.tab-link').forEach(link => {
-      link.classList.toggle('active', link.getAttribute('href') === currentPageUrl);
-    });
-
-    // Mayúsculas en serial
+    // --- resto del código (igual que antes) ---
     document.getElementById('serial').addEventListener('input', () => {
       document.getElementById('serial').value = document.getElementById('serial').value.toUpperCase();
     });
 
-    // Solo números en código ID
     document.getElementById('codigo_id').addEventListener('input', () => {
       document.getElementById('codigo_id').value = document.getElementById('codigo_id').value.replace(/\D/g, '').slice(0, 8);
     });
 
-    // Mostrar motivos
     document.getElementById('status').addEventListener('change', () => {
       const motivoInop = document.getElementById('motivoInoperativo');
       const motivoExtr = document.getElementById('motivoExtraviado');
@@ -394,7 +403,6 @@
       motivoExtr.style.display = estado === 'Extraviado' ? 'block' : 'none';
     });
 
-    // Verificar unicidad (excluyendo el propio registro)
     async function isUnique(field, value, excludeId) {
       if (!value) return false;
       const { data, error } = await supabase
@@ -405,26 +413,21 @@
       return data.length === 0;
     }
 
-    // Cargar radio por ID
     async function cargarRadioPorId(id) {
       const msg = document.getElementById('message');
       const form = document.getElementById('editForm');
       const searchSection = document.getElementById('searchSection');
       const loading = document.getElementById('loadingMessage');
-
       try {
         loading.style.display = 'block';
         searchSection.style.display = 'none';
         msg.textContent = '';
-
         const { data, error } = await supabase
           .from('radios')
           .select('*')
           .eq('id', id)
           .single();
-
         if (error) throw error;
-
         currentRadioId = data.id;
         document.getElementById('radioId').value = data.id;
         document.getElementById('marca').value = data.marca;
@@ -442,7 +445,6 @@
         motivoExtr.style.display = data.estado === 'Extraviado' ? 'block' : 'none';
         document.getElementById('motivo_inoperativo').value = data.motivo_inoperativo || '';
         document.getElementById('motivo_extraviado').value = data.motivo_extraviado || '';
-
         form.style.display = 'block';
         loading.style.display = 'none';
       } catch (err) {
@@ -453,27 +455,22 @@
       }
     }
 
-    // Buscar radio
     async function buscarRadio(query) {
       const msg = document.getElementById('message');
       const form = document.getElementById('editForm');
       const noResult = document.getElementById('noResult');
-
       if (!query.trim()) {
         msg.textContent = 'Ingrese un valor para buscar.';
         form.style.display = 'none';
         noResult.style.display = 'block';
         return;
       }
-
       try {
         const { data, error } = await supabase
           .from('radios')
           .select('*')
           .or(`serial.eq.${query.trim()},codigo_id.eq.${query.trim()}`);
-
         if (error) throw error;
-
         if (data.length === 0) {
           msg.textContent = '⚠️ Radio no encontrado.';
           form.style.display = 'none';
@@ -481,7 +478,7 @@
         } else {
           const r = data[0];
           currentRadioId = r.id;
-
+          // ... (igual que antes)
           document.getElementById('radioId').value = r.id;
           document.getElementById('marca').value = r.marca;
           document.getElementById('modelo').value = r.modelo;
@@ -498,7 +495,6 @@
           motivoExtr.style.display = r.estado === 'Extraviado' ? 'block' : 'none';
           document.getElementById('motivo_inoperativo').value = r.motivo_inoperativo || '';
           document.getElementById('motivo_extraviado').value = r.motivo_extraviado || '';
-
           msg.textContent = '';
           form.style.display = 'block';
           noResult.style.display = 'none';
@@ -511,17 +507,13 @@
       }
     }
 
-    // Guardar cambios
     document.getElementById('editForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const msg = document.getElementById('message');
-
       const serial = document.getElementById('serial').value.trim();
       const codigo_id = document.getElementById('codigo_id').value.trim();
-
       const serialOk = await isUnique('serial', serial, currentRadioId);
       const codigoOk = await isUnique('codigo_id', codigo_id, currentRadioId);
-
       if (!serialOk) {
         msg.textContent = '⚠️ El número de serie ya está en uso por otro radio.';
         return;
@@ -530,7 +522,6 @@
         msg.textContent = '⚠️ El Código ID ya está en uso por otro radio.';
         return;
       }
-
       try {
         const { error } = await supabase
           .from('radios')
@@ -550,9 +541,7 @@
               document.getElementById('motivo_extraviado').value.trim() || null : null
           })
           .eq('id', currentRadioId);
-
         if (error) throw error;
-
         msg.textContent = '✅ Cambios guardados exitosamente.';
         msg.className = 'message success';
         setTimeout(() => msg.textContent = '', 3000);
@@ -563,19 +552,15 @@
       }
     });
 
-    // Eliminar
     document.getElementById('deleteBtn').addEventListener('click', async () => {
       if (!confirm('¿Está seguro de eliminar este radio? Esta acción no se puede deshacer.')) return;
-
       const msg = document.getElementById('message');
       try {
         const { error } = await supabase
           .from('radios')
           .delete()
           .eq('id', currentRadioId);
-
         if (error) throw error;
-
         msg.textContent = '✅ Radio eliminado correctamente.';
         msg.className = 'message success';
         document.getElementById('editForm').style.display = 'none';
@@ -590,7 +575,6 @@
       }
     });
 
-    // Eventos de búsqueda
     document.getElementById('searchBtn').addEventListener('click', () => {
       buscarRadio(document.getElementById('searchInput').value);
     });
