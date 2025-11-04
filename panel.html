@@ -161,6 +161,7 @@
     }
     .bar-fill {
       height: 100%;
+      background: #1976d2; /* Solo color azul */
       border-radius: 12px;
     }
     .loading {
@@ -168,11 +169,6 @@
       color: #555;
       font-style: italic;
     }
-    /* Colores por tipo */
-    .tipo-portatil-motorola { background: #4caf50; } /* Verde */
-    .tipo-portatil-hytera { background: #ff9800; }   /* Naranja */
-    .tipo-movil-motorola { background: #2196f3; }    /* Azul */
-    .tipo-movil-hytera { background: #9c27b0; }      /* Morado */
   </style>
 </head>
 <body>
@@ -188,7 +184,7 @@
       </div>
     </div>
     <div class="tabs" id="dynamicTabs">
-      <!-- Se llenará con JavaScript -->
+      <!-- Se llenará con JavaScript según el rol -->
     </div>
     <div id="loadingStats" class="loading">Cargando estadísticas...</div>
     <div id="statsContent" style="display: none;">
@@ -237,17 +233,12 @@
       container.innerHTML = '';
       data.forEach(item => {
         const percent = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-        const width = Math.max(5, percent);
-        let className = '';
-        if (item.label.includes('Portátil Motorola')) className = 'tipo-portatil-motorola';
-        else if (item.label.includes('Portátil Hytera')) className = 'tipo-portatil-hytera';
-        else if (item.label.includes('Móvil Motorola')) className = 'tipo-movil-motorola';
-        else if (item.label.includes('Móvil Hytera')) className = 'tipo-movil-hytera';
+        const width = Math.max(5, percent); // Mínimo visible
         container.innerHTML += `
           <div class="chart-row">
             <div class="chart-label">${item.label} <strong>(${item.count})</strong></div>
             <div class="chart-bar">
-              <div class="bar-fill ${className}" style="width: ${width}%"></div>
+              <div class="bar-fill" style="width: ${width}%"></div>
             </div>
           </div>
         `;
@@ -256,11 +247,11 @@
 
     async function cargarEstadisticas() {
       try {
-        // Cargar TODOS los radios con los campos necesarios
+        // Cargar TODOS los radios de una sola vez
         const {  radiosData } = await supabase.from('radios').select('estado, tipo');
         const total = radiosData ? radiosData.length : 0;
 
-        // --- ESTADO ---
+        // --- Distribución por Estado ---
         let estados = [];
         if (radiosData && radiosData.length > 0) {
           const estadoCount = {};
@@ -270,14 +261,14 @@
           estados = Object.entries(estadoCount).map(([label, count]) => ({ label, count }));
         }
 
-        // --- TIPO (siempre 4 categorías) ---
+        // --- Distribución por Tipo (siempre los 4 tipos) ---
         const tiposPosibles = [
           'Portátil Motorola',
           'Portátil Hytera',
           'Móvil Motorola',
           'Móvil Hytera'
         ];
-        let tipos = tiposPosibles.map(label => ({ label, count: 0 })); // por defecto 0
+        let tipos = tiposPosibles.map(label => ({ label, count: 0 })); // Inicializar en 0
         if (radiosData && radiosData.length > 0) {
           const tipoCount = {};
           radiosData.forEach(r => {
@@ -335,7 +326,7 @@
           return;
         }
 
-        const {  perfil, error } = await supabase
+        const { data: perfil, error } = await supabase
           .from('perfiles')
           .select('rol')
           .eq('id', user.id)
