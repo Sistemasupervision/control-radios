@@ -281,6 +281,10 @@
 
     <!-- Lista completa -->
     <div class="section-title">Todos los Radios Registrados</div>
+<div id="clickedResult" style="display: none; margin-top: 20px;">
+  <div class="section-title">Detalles del Radio Seleccionado</div>
+  <div class="result-card" id="clickedResultCard"></div>
+</div>
     <div id="loadingAll" style="text-align: center; color: #555;">Cargando registros...</div>
     <div id="allRadiosContainer" style="display: none;">
       <table class="radios-table">
@@ -367,52 +371,67 @@
     }
 
     // Renderizar tarjeta detallada
-    function renderResultCard(radio) {
-      const motivo = radio.estado === 'Inoperativo' && radio.motivo_inoperativo ? radio.motivo_inoperativo :
-                     radio.estado === 'Extraviado' && radio.motivo_extraviado ? radio.motivo_extraviado : '—';
+function renderResultCard(radio, targetId = 'resultCard') {
+  const motivo = radio.estado === 'Inoperativo' && radio.motivo_inoperativo ? radio.motivo_inoperativo :
+                 radio.estado === 'Extraviado' && radio.motivo_extraviado ? radio.motivo_extraviado : '—';
 
-      const html = `
-        <div class="card-row"><div class="card-label">Número de Serie:</div><div class="card-value">${radio.serial || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Código ID:</div><div class="card-value">${radio.codigo_id || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Marca:</div><div class="card-value">${radio.marca || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Modelo:</div><div class="card-value">${radio.modelo || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Tipo de Radio:</div><div class="card-value">${radio.tipo || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Dependencia:</div><div class="card-value">${radio.dependencia || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Posee Tipo C:</div><div class="card-value">${getTipoCHTML(radio.tipo_c)}</div></div>
-        <div class="card-row"><div class="card-label">Estado:</div><div class="card-value">${getEstadoHTML(radio.estado)}</div></div>
-        <div class="card-row"><div class="card-label">Observaciones:</div><div class="card-value">${radio.observaciones || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Motivo:</div><div class="card-value">${motivo}</div></div>
-        <div class="card-row"><div class="card-label">Registrado:</div><div class="card-value">${formatDate(radio.created_at)}</div></div>
-      `;
-      document.getElementById('resultCard').innerHTML = html;
-    }
+  const html = `
+    <div class="card-row"><div class="card-label">Número de Serie:</div><div class="card-value">${radio.serial || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Código ID:</div><div class="card-value">${radio.codigo_id || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Marca:</div><div class="card-value">${radio.marca || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Modelo:</div><div class="card-value">${radio.modelo || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Tipo de Radio:</div><div class="card-value">${radio.tipo || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Dependencia:</div><div class="card-value">${radio.dependencia || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Posee Tipo C:</div><div class="card-value">${getTipoCHTML(radio.tipo_c)}</div></div>
+    <div class="card-row"><div class="card-label">Estado:</div><div class="card-value">${getEstadoHTML(radio.estado)}</div></div>
+    <div class="card-row"><div class="card-label">Observaciones:</div><div class="card-value">${radio.observaciones || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Motivo:</div><div class="card-value">${motivo}</div></div>
+    <div class="card-row"><div class="card-label">Registrado:</div><div class="card-value">${formatDate(radio.created_at)}</div></div>
+  `;
+  document.getElementById(targetId).innerHTML = html;
+}
 
     // Renderizar página de lista
-    function renderPage(page) {
-      const start = (page - 1) * ITEMS_PER_PAGE;
-      const end = start + ITEMS_PER_PAGE;
-      const pageData = allRadios.slice(start, end);
-      const tbody = document.getElementById('allRadiosBody');
-      const totalPages = Math.ceil(allRadios.length / ITEMS_PER_PAGE);
+  function renderPage(page) {
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  const pageData = allRadios.slice(start, end);
+  const tbody = document.getElementById('allRadiosBody');
+  const totalPages = Math.ceil(allRadios.length / ITEMS_PER_PAGE);
 
-      tbody.innerHTML = pageData.map(r => `
-        <tr>
-          <td><strong>${r.serial || '—'}</strong></td>
-          <td>${r.codigo_id || '—'}</td>
-          <td>${r.tipo.split(' ')[0] || '—'}</td>
-          <td>${r.marca || '—'}</td>
-          <td>${r.modelo || '—'}</td>
-          <td>${(r.dependencia || '').substring(0,12) + (r.dependencia?.length > 12 ? '…' : '')}</td>
-          <td>${r.tipo_c === 'Sí' ? '✅' : '—'}</td>
-          <td>${getEstadoHTML(r.estado)}</td>
-          <td>${formatDate(r.created_at).split(' ')[0]}</td>
-        </tr>
-      `).join('');
+  tbody.innerHTML = pageData.map(r => `
+    <tr data-id="${r.id}" style="cursor: pointer;">
+      <td><strong>${r.serial || '—'}</strong></td>
+      <td>${r.codigo_id || '—'}</td>
+      <td>${r.tipo.split(' ')[0] || '—'}</td>
+      <td>${r.marca || '—'}</td>
+      <td>${r.modelo || '—'}</td>
+      <td>${(r.dependencia || '').substring(0,12) + (r.dependencia?.length > 12 ? '…' : '')}</td>
+      <td>${r.tipo_c === 'Sí' ? '✅' : '—'}</td>
+      <td>${getEstadoHTML(r.estado)}</td>
+      <td>${formatDate(r.created_at).split(' ')[0]}</td>
+    </tr>
+  `).join('');
 
-      document.getElementById('pageInfo').textContent = `Página ${page} de ${totalPages || 1}`;
-      document.getElementById('prevPage').disabled = page === 1;
-      document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
-    }
+  // Añadir evento de clic a cada fila
+  tbody.querySelectorAll('tr').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = parseInt(row.dataset.id);
+      const radio = allRadios.find(r => r.id === id);
+      if (radio) {
+        renderResultCard(radio, 'clickedResultCard');
+        document.getElementById('clickedResult').style.display = 'block';
+        
+        // Opcional: scroll suave a la tarjeta
+        document.getElementById('clickedResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  document.getElementById('pageInfo').textContent = `Página ${page} de ${totalPages || 1}`;
+  document.getElementById('prevPage').disabled = page === 1;
+  document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
+}
 
     // Cargar todos
     async function cargarTodosLosRadios() {
