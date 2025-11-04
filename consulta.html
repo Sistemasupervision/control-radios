@@ -140,38 +140,66 @@
     .section-title {
       font-size: 18px;
       font-weight: 600;
-      margin: 20px 0 12px;
+      margin: 24px 0 16px;
       color: #0d47a1;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      margin-bottom: 24px;
+    /* Tarjeta de resultado detallado */
+    .result-card {
+      background: #f8fbff;
+      border: 1px solid #e1eaf4;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
     }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      font-size: 13px;
+    .card-row {
+      display: flex;
+      margin-bottom: 12px;
     }
-    th {
-      background: #e3f2fd;
-      color: #0d47a1;
+    .card-label {
       font-weight: 600;
+      width: 180px;
+      color: #37474f;
     }
-    tr:nth-child(even) {
-      background-color: #f9fbfd;
-    }
-    tr:hover {
-      background-color: #f1f8fe;
+    .card-value {
+      flex: 1;
+      font-size: 15px;
+      color: #263238;
     }
     .status-operativo { color: #2e7d32; font-weight: 600; }
     .status-inoperativo { color: #d32f2f; font-weight: 600; }
     .status-extraviado { color: #f57c00; font-weight: 600; }
+    .tipo-c-si { color: #1976d2; font-weight: 600; }
+    .tipo-c-no { color: #90a4ae; font-style: italic; }
+
+    /* Tabla de todos los radios */
+    .radios-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .radios-table th, .radios-table td {
+      padding: 12px 10px;
+      font-size: 14px;
+      text-align: left;
+    }
+    .radios-table th {
+      background: #e3f2fd;
+      color: #0d47a1;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .radios-table tbody tr {
+      border-bottom: 1px solid #eee;
+    }
+    .radios-table tbody tr:last-child {
+      border-bottom: none;
+    }
+    .radios-table tbody tr:hover {
+      background-color: #f5f9ff;
+    }
+
     .message {
       text-align: center;
       margin-top: 16px;
@@ -180,7 +208,6 @@
       font-weight: 500;
       color: #d32f2f;
     }
-
     .no-results {
       text-align: center;
       padding: 24px;
@@ -246,45 +273,28 @@
 
     <div class="message" id="message"></div>
 
-    <!-- Resultado de búsqueda -->
+    <!-- Resultado detallado -->
     <div id="searchResult" style="display: none;">
       <div class="section-title">Resultado de la búsqueda</div>
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Marca</th>
-            <th>Modelo</th>
-            <th>Tipo</th>
-            <th>Serie</th>
-            <th>ID</th>
-            <th>Dependencia</th>
-            <th>Tipo C</th>
-            <th>Estado</th>
-            <th>Observaciones</th>
-            <th>Motivo</th>
-          </tr>
-        </thead>
-        <tbody id="searchResultBody"></tbody>
-      </table>
+      <div class="result-card" id="resultCard"></div>
     </div>
 
-    <!-- Lista completa con paginación -->
+    <!-- Lista completa -->
     <div class="section-title">Todos los Radios Registrados</div>
     <div id="loadingAll" style="text-align: center; color: #555;">Cargando registros...</div>
     <div id="allRadiosContainer" style="display: none;">
-      <table>
+      <table class="radios-table">
         <thead>
           <tr>
-            <th>Fecha</th>
+            <th>Serial</th>
+            <th>ID</th>
+            <th>Tipo</th>
             <th>Marca</th>
             <th>Modelo</th>
-            <th>Tipo</th>
-            <th>Serie</th>
-            <th>ID</th>
-            <th>Dependencia</th>
+            <th>Dep.</th>
             <th>Tipo C</th>
             <th>Estado</th>
+            <th>Fecha</th>
           </tr>
         </thead>
         <tbody id="allRadiosBody"></tbody>
@@ -312,7 +322,7 @@
     let currentPage = 1;
     const ITEMS_PER_PAGE = 10;
 
-    // Verificar autenticación
+    // Autenticación
     (async () => {
       try {
         const { data } = await supabase.auth.getUser();
@@ -322,19 +332,16 @@
       }
     })();
 
-    // Salir
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
-    // Pestaña activa
     const currentPageUrl = window.location.pathname.split('/').pop();
     document.querySelectorAll('.tab-link').forEach(link => {
       link.classList.toggle('active', link.getAttribute('href') === currentPageUrl);
     });
 
-    // Formatear fecha
     function formatDate(dateStr) {
       if (!dateStr) return '—';
       const d = new Date(dateStr);
@@ -347,14 +354,40 @@
       });
     }
 
-    // Estado con estilo
     function getEstadoHTML(estado) {
       const cls = estado === 'Operativo' ? 'status-operativo' :
                   estado === 'Inoperativo' ? 'status-inoperativo' : 'status-extraviado';
       return `<span class="${cls}">${estado}</span>`;
     }
 
-    // Renderizar página
+    function getTipoCHTML(tipo_c) {
+      if (tipo_c === 'Sí') return `<span class="tipo-c-si">Sí</span>`;
+      if (tipo_c === 'No') return `<span class="tipo-c-no">No</span>`;
+      return '—';
+    }
+
+    // Renderizar tarjeta detallada
+    function renderResultCard(radio) {
+      const motivo = radio.estado === 'Inoperativo' && radio.motivo_inoperativo ? radio.motivo_inoperativo :
+                     radio.estado === 'Extraviado' && radio.motivo_extraviado ? radio.motivo_extraviado : '—';
+
+      const html = `
+        <div class="card-row"><div class="card-label">Número de Serie:</div><div class="card-value">${radio.serial || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Código ID:</div><div class="card-value">${radio.codigo_id || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Marca:</div><div class="card-value">${radio.marca || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Modelo:</div><div class="card-value">${radio.modelo || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Tipo de Radio:</div><div class="card-value">${radio.tipo || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Dependencia:</div><div class="card-value">${radio.dependencia || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Posee Tipo C:</div><div class="card-value">${getTipoCHTML(radio.tipo_c)}</div></div>
+        <div class="card-row"><div class="card-label">Estado:</div><div class="card-value">${getEstadoHTML(radio.estado)}</div></div>
+        <div class="card-row"><div class="card-label">Observaciones:</div><div class="card-value">${radio.observaciones || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Motivo:</div><div class="card-value">${motivo}</div></div>
+        <div class="card-row"><div class="card-label">Registrado:</div><div class="card-value">${formatDate(radio.created_at)}</div></div>
+      `;
+      document.getElementById('resultCard').innerHTML = html;
+    }
+
+    // Renderizar página de lista
     function renderPage(page) {
       const start = (page - 1) * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE;
@@ -364,15 +397,15 @@
 
       tbody.innerHTML = pageData.map(r => `
         <tr>
-          <td>${formatDate(r.created_at)}</td>
+          <td><strong>${r.serial || '—'}</strong></td>
+          <td>${r.codigo_id || '—'}</td>
+          <td>${r.tipo.split(' ')[0] || '—'}</td>
           <td>${r.marca || '—'}</td>
           <td>${r.modelo || '—'}</td>
-          <td>${r.tipo || '—'}</td>
-          <td>${r.serial || '—'}</td>
-          <td>${r.codigo_id || '—'}</td>
-          <td>${r.dependencia || '—'}</td>
-          <td>${r.tipo_c || '—'}</td>
+          <td>${(r.dependencia || '').substring(0,12) + (r.dependencia?.length > 12 ? '…' : '')}</td>
+          <td>${r.tipo_c === 'Sí' ? '✅' : '—'}</td>
           <td>${getEstadoHTML(r.estado)}</td>
+          <td>${formatDate(r.created_at).split(' ')[0]}</td>
         </tr>
       `).join('');
 
@@ -381,7 +414,7 @@
       document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
     }
 
-    // Cargar todos los radios
+    // Cargar todos
     async function cargarTodosLosRadios() {
       const loading = document.getElementById('loadingAll');
       const container = document.getElementById('allRadiosContainer');
@@ -408,18 +441,17 @@
         }
         loading.style.display = 'none';
       } catch (err) {
-        console.error('Error al cargar radios:', err);
-        loading.textContent = '❌ Error al cargar los registros.';
+        console.error('Error:', err);
+        loading.textContent = '❌ Error al cargar.';
       }
     }
 
-    // Buscar radio
+    // Buscar
     async function buscarRadio(query) {
       const msg = document.getElementById('message');
       const searchRes = document.getElementById('searchResult');
       const allRes = document.getElementById('allRadiosContainer');
       const noRadios = document.getElementById('noRadios');
-      const tbody = document.getElementById('searchResultBody');
 
       if (!query.trim()) {
         msg.textContent = '';
@@ -438,43 +470,26 @@
         if (error) throw error;
 
         if (data.length === 0) {
-          msg.textContent = '⚠️ No se encontró ningún radio con ese número de serie o código ID.';
+          msg.textContent = '⚠️ Radio no encontrado.';
           searchRes.style.display = 'none';
           allRes.style.display = 'none';
           noRadios.style.display = 'none';
         } else {
           msg.textContent = '';
-          tbody.innerHTML = data.map(r => `
-            <tr>
-              <td>${formatDate(r.created_at)}</td>
-              <td>${r.marca || '—'}</td>
-              <td>${r.modelo || '—'}</td>
-              <td>${r.tipo || '—'}</td>
-              <td>${r.serial || '—'}</td>
-              <td>${r.codigo_id || '—'}</td>
-              <td>${r.dependencia || '—'}</td>
-              <td>${r.tipo_c || '—'}</td>
-              <td>${getEstadoHTML(r.estado)}</td>
-              <td>${r.observaciones || '—'}</td>
-              <td>${
-                r.estado === 'Inoperativo' && r.motivo_inoperativo ? r.motivo_inoperativo :
-                r.estado === 'Extraviado' && r.motivo_extraviado ? r.motivo_extraviado : '—'
-              }</td>
-            </tr>
-          `).join('');
+          renderResultCard(data[0]); // mostramos el primero (debería ser único)
           searchRes.style.display = 'block';
           allRes.style.display = 'none';
           noRadios.style.display = 'none';
         }
       } catch (err) {
-        console.error('Error al buscar:', err);
-        msg.textContent = '❌ Error al realizar la búsqueda.';
+        console.error('Error:', err);
+        msg.textContent = '❌ Error en la búsqueda.';
         searchRes.style.display = 'none';
         allRes.style.display = 'none';
       }
     }
 
-    // Eventos de paginación
+    // Eventos
     document.getElementById('prevPage').addEventListener('click', () => {
       if (currentPage > 1) {
         currentPage--;
@@ -490,7 +505,6 @@
       }
     });
 
-    // Eventos de búsqueda
     const searchInput = document.getElementById('searchInput');
     document.getElementById('searchBtn').addEventListener('click', () => {
       buscarRadio(searchInput.value);
@@ -511,7 +525,6 @@
       }
     });
 
-    // Cargar al inicio
     cargarTodosLosRadios();
   </script>
 </body>
