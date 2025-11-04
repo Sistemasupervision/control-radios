@@ -161,7 +161,6 @@
     }
     .bar-fill {
       height: 100%;
-      background: #1976d2;
       border-radius: 12px;
     }
     .loading {
@@ -169,6 +168,11 @@
       color: #555;
       font-style: italic;
     }
+    /* Colores para tipos de radio */
+    .tipo-portatil-motorola { background: #4caf50; } /* Verde */
+    .tipo-portatil-hytera { background: #ff9800; }   /* Naranja */
+    .tipo-movil-motorola { background: #2196f3; }    /* Azul */
+    .tipo-movil-hytera { background: #9c27b0; }      /* Morado */
   </style>
 </head>
 <body>
@@ -189,6 +193,7 @@
     <div id="loadingStats" class="loading">Cargando estadísticas...</div>
     <div id="statsContent" style="display: none;">
       <div class="stats-grid" id="statsGrid"></div>
+      
       <div class="chart-section">
         <div class="chart-title">Distribución por Estado</div>
         <div id="estadoChart"></div>
@@ -228,30 +233,38 @@
       tabsContainer.innerHTML = tabsHTML;
     }
 
+    // Renderizar gráfico simple de barras con colores
     function renderBarChart(data, containerId, maxCount) {
       const container = document.getElementById(containerId);
       container.innerHTML = '';
       data.forEach(item => {
         const percent = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-        const width = Math.max(5, percent);
+        const width = Math.max(5, percent); // Mínimo visible
+        const className = item.label.includes('Portátil Motorola') ? 'tipo-portatil-motorola' :
+                          item.label.includes('Portátil Hytera') ? 'tipo-portatil-hytera' :
+                          item.label.includes('Móvil Motorola') ? 'tipo-movil-motorola' :
+                          'tipo-movil-hytera';
         container.innerHTML += `
           <div class="chart-row">
             <div class="chart-label">${item.label} <strong>(${item.count})</strong></div>
             <div class="chart-bar">
-              <div class="bar-fill" style="width: ${width}%"></div>
+              <div class="bar-fill ${className}" style="width: ${width}%"></div>
             </div>
           </div>
         `;
       });
     }
 
+    // Cargar estadísticas
     async function cargarEstadisticas() {
       try {
-        // Total
+        // Total de radios
         const { count: total } = await supabase.from('radios').select('*', { count: 'exact', head: true });
 
         // Por estado
-        const { data: estadosData } = await supabase.from('radios').select('estado');
+        const { data: estadosData } = await supabase
+          .from('radios')
+          .select('estado');
         let estados = [];
         if (estadosData && estadosData.length > 0) {
           const count = {};
@@ -261,21 +274,32 @@
           estados = Object.entries(count).map(([label, count]) => ({ label, count }));
         }
 
-        // Por tipo
-        const { data: tiposData } = await supabase.from('radios').select('tipo');
+        // Por tipo (siempre mostrar los 4 tipos posibles)
+        const tiposPosibles = [
+          'Portátil Motorola',
+          'Portátil Hytera',
+          'Móvil Motorola',
+          'Móvil Hytera'
+        ];
         let tipos = [];
-        if (tiposData && tiposData.length > 0) {
+        if (estadosData && estadosData.length > 0) {
           const count = {};
-          tiposData.forEach(r => {
-            count[r.tipo] = (count[r.tipo] || 0) + 1;
+          tiposPosibles.forEach(tipo => count[tipo] = 0); // Inicializar en 0
+          estadosData.forEach(r => {
+            if (count.hasOwnProperty(r.tipo)) {
+              count[r.tipo] = (count[r.tipo] || 0) + 1;
+            }
           });
-          tipos = Object.entries(count).map(([label, count]) => ({ label, count }));
+          tipos = tiposPosibles.map(label => ({ label, count: count[label] || 0 }));
+        } else {
+          // Si no hay datos, mostrar todos los tipos con 0
+          tipos = tiposPosibles.map(label => ({ label, count: 0 }));
         }
 
         const maxEstado = Math.max(...estados.map(e => e.count), 1);
         const maxTipo = Math.max(...tipos.map(t => t.count), 1);
 
-        // Tarjetas resumen
+        // Renderizar tarjetas
         const statsGrid = document.getElementById('statsGrid');
         statsGrid.innerHTML = `
           <div class="stat-card">
@@ -296,6 +320,7 @@
           </div>
         `;
 
+        // Renderizar gráficos
         renderBarChart(estados, 'estadoChart', maxEstado);
         renderBarChart(tipos, 'tipoChart', maxTipo);
 
@@ -303,7 +328,7 @@
         document.getElementById('statsContent').style.display = 'block';
       } catch (err) {
         console.error('Error al cargar estadísticas:', err);
-        document.getElementById('loadingStats').textContent = '❌ No se pudieron cargar las estadísticas.';
+        document.getElementById('loadingStats').textContent = '❌ Error al cargar los datos.';
       }
     }
 
