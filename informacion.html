@@ -164,10 +164,7 @@
     </div>
 
     <div class="tabs">
-      <a href="consulta.html" class="tab-link">🔍 Consulta</a>
-      <a href="registro.html" class="tab-link">➕ Registro</a>
-      <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
-      <a href="informacion.html" class="tab-link active">ℹ️ Información</a>
+      <!-- Se llenará dinámicamente con JavaScript -->
     </div>
 
     <div class="info-section">
@@ -223,12 +220,63 @@
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Verificar autenticación
+    let userRol = 'consultor';
+
+    // Función para configurar pestañas según rol
+    function configurarPestanas(rol) {
+      const tabsContainer = document.querySelector('.tabs');
+      if (!tabsContainer) return;
+
+      let tabsHTML = '';
+      if (rol === 'administrador') {
+        tabsHTML = `
+          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+          <a href="registro.html" class="tab-link">➕ Registro</a>
+          <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
+          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+        `;
+      } else {
+        tabsHTML = `
+          <a href="panel.html" class="tab-link">📊 Panel</a>
+          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+        `;
+      }
+
+      tabsContainer.innerHTML = tabsHTML;
+
+      const currentPage = window.location.pathname.split('/').pop();
+      document.querySelectorAll('.tab-link').forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === currentPage);
+      });
+    }
+
+    // Verificar autenticación y rol
     (async () => {
       try {
-        const { data } = await supabase.auth.getUser();
-        if (!data.user) window.location.href = 'index.html';
+        const {  { user } } = await supabase.auth.getUser();
+        if (!user) {
+          window.location.href = 'index.html';
+          return;
+        }
+
+        const {  perfil, error } = await supabase
+          .from('perfiles')
+          .select('rol')
+          .eq('id', user.id)
+          .single();
+
+        userRol = perfil?.rol || 'consultor';
+        configurarPestanas(userRol);
+
+        // Redirigir si es consultor y está en página restringida
+        const currentPage = window.location.pathname.split('/').pop();
+        if (userRol === 'consultor' && ['registro.html', 'modificaciones.html'].includes(currentPage)) {
+          window.location.href = 'panel.html';
+        }
+
       } catch (err) {
+        console.error('Error:', err);
         window.location.href = 'index.html';
       }
     })();
@@ -237,12 +285,6 @@
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
-    });
-
-    // Pestaña activa
-    const currentPage = window.location.pathname.split('/').pop();
-    document.querySelectorAll('.tab-link').forEach(link => {
-      link.classList.toggle('active', link.getAttribute('href') === currentPage);
     });
   </script>
 </body>
