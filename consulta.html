@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Consulta | Control de Radios</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- SheetJS para exportar a Excel -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
     body {
@@ -66,6 +68,12 @@
       border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; transition: background 0.2s;
     }
     .search-btn:hover { background: #1565c0; }
+    .export-btn {
+      background: #388e3c; color: white; border: none; padding: 10px 18px;
+      border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer;
+      transition: background 0.2s; margin-bottom: 16px; display: inline-block;
+    }
+    .export-btn:hover { background: #2e7d32; }
     .section-title { font-size: 18px; font-weight: 600; margin: 24px 0 16px; color: #0d47a1; }
     .result-card {
       background: #f8fbff; border: 1px solid #e1eaf4; border-radius: 16px;
@@ -114,9 +122,9 @@
       </div>
     </div>
     <!-- ✅ Pestañas dinámicas -->
-    <div class="tabs" id="dynamicTabs">
-      <!-- Se llenará con JS -->
-    </div>
+    <div class="tabs" id="dynamicTabs"></div>
+    <!-- ✅ Botón de exportación -->
+    <button class="export-btn" onclick="exportarAExcel()">📥 Exportar a Excel</button>
     <!-- Búsqueda -->
     <div class="search-section">
       <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
@@ -159,8 +167,11 @@
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     let userRol = 'consultor';
+    let allRadios = [];
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 10;
 
-    // ✅ Configurar pestañas según rol
+    // ✅ Configurar pestañas dinámicas
     function configurarPestanas(rol) {
       const tabsContainer = document.getElementById('dynamicTabs');
       if (!tabsContainer) return;
@@ -182,7 +193,33 @@
       tabsContainer.innerHTML = tabsHTML;
     }
 
-    // Funciones de formato y renderizado (igual que antes)
+    // ✅ Función de exportación
+    function exportarAExcel() {
+      if (!allRadios || allRadios.length === 0) {
+        alert('No hay datos para exportar.');
+        return;
+      }
+      const datosParaExcel = allRadios.map(radio => ({
+        'Número de Serie': radio.serial || '',
+        'Código ID': radio.codigo_id || '',
+        'Marca': radio.marca || '',
+        'Modelo': radio.modelo || '',
+        'Tipo de Radio': radio.tipo || '',
+        'Dependencia': radio.dependencia || '',
+        'Posee Tipo C': radio.tipo_c || '',
+        'Estado': radio.estado || '',
+        'Motivo': radio.estado === 'Inoperativo' ? (radio.motivo_inoperativo || '') :
+                 radio.estado === 'Extraviado' ? (radio.motivo_extraviado || '') : '',
+        'Observaciones': radio.observaciones || '',
+        'Registrado': radio.created_at ? new Date(radio.created_at).toLocaleString('es-VE') : ''
+      }));
+      const worksheet = XLSX.utils.json_to_sheet(datosParaExcel);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Radios CPNB');
+      XLSX.writeFile(workbook, 'radios_cpn_bolivariana.xlsx');
+    }
+
+    // Funciones de formato
     function formatDate(dateStr) {
       if (!dateStr) return '—';
       const d = new Date(dateStr);
@@ -220,9 +257,6 @@
       `;
       document.getElementById(targetId).innerHTML = html;
     }
-    let allRadios = [];
-    let currentPage = 1;
-    const ITEMS_PER_PAGE = 10;
     function renderPage(page) {
       const start = (page - 1) * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE;
@@ -233,7 +267,7 @@
         <tr data-id="${r.id}">
           <td><strong>${r.serial || '—'}</strong></td>
           <td>${r.codigo_id || '—'}</td>
-          <td>${r.tipo.split(' ')[0] || '—'}</td>
+          <td>${r.tipo || '—'}</td> <!-- Nombre completo -->
           <td>${r.marca || '—'}</td>
           <td>${r.modelo || '—'}</td>
           <td>${(r.dependencia || '').substring(0,12)}${r.dependencia?.length > 12 ? '…' : ''}</td>
@@ -257,6 +291,8 @@
       document.getElementById('prevPage').disabled = page === 1;
       document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
     }
+
+    // Cargar datos
     async function cargarTodosLosRadios() {
       const loading = document.getElementById('loadingAll');
       const container = document.getElementById('allRadiosContainer');
@@ -283,6 +319,8 @@
         loading.textContent = '❌ Error al cargar los registros.';
       }
     }
+
+    // Búsqueda
     async function buscarRadio(query) {
       const msg = document.getElementById('message');
       const searchRes = document.getElementById('searchResult');
@@ -325,10 +363,11 @@
         allRes.style.display = 'none';
       }
     }
-    // ✅ Inicialización con rol
+
+    // ✅ Inicialización
     (async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {  { user } } = await supabase.auth.getUser();
         if (!user) {
           window.location.href = 'index.html';
           return;
@@ -341,17 +380,24 @@
         userRol = perfil?.rol || 'consultor';
         configurarPestanas(userRol);
         await cargarTodosLosRadios();
+        // Redirigir si consultor entra a página restringida
+        const currentPageName = window.location.pathname.split('/').pop();
+        if (userRol === 'consultor' && ['registro.html', 'modificaciones.html'].includes(currentPageName)) {
+          window.location.href = 'panel.html';
+        }
       } catch (err) {
         console.error('Error en autenticación:', err);
         window.location.href = 'index.html';
       }
     })();
+
     // Salir
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
-    // Eventos de búsqueda y paginación
+
+    // Eventos
     document.getElementById('prevPage').addEventListener('click', () => {
       if (currentPage > 1) {
         currentPage--;
