@@ -236,7 +236,7 @@
         const width = Math.max(5, percent);
         container.innerHTML += `
           <div class="chart-row">
-            <div class="chart-label">${item.label}</div>
+            <div class="chart-label">${item.label} <strong>(${item.count})</strong></div>
             <div class="chart-bar">
               <div class="bar-fill" style="width: ${width}%"></div>
             </div>
@@ -275,7 +275,7 @@
         const maxEstado = Math.max(...estados.map(e => e.count), 1);
         const maxTipo = Math.max(...tipos.map(t => t.count), 1);
 
-        // Tarjetas
+        // Tarjetas resumen
         const statsGrid = document.getElementById('statsGrid');
         statsGrid.innerHTML = `
           <div class="stat-card">
