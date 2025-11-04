@@ -88,7 +88,7 @@
       background: #f0f4f8;
       padding: 6px;
       border-radius: 14px;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
     .tab-link {
       flex: 1;
@@ -113,7 +113,7 @@
     .search-section {
       display: flex;
       gap: 12px;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
     .search-input {
       flex: 1;
@@ -137,15 +137,13 @@
       background: #1565c0;
     }
 
-    .result-container {
-      display: none;
-    }
-    .result-title {
+    .section-title {
       font-size: 18px;
       font-weight: 600;
-      margin-bottom: 16px;
+      margin: 20px 0 12px;
       color: #0d47a1;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -153,30 +151,40 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
     }
     th, td {
-      padding: 14px;
+      padding: 12px;
       text-align: left;
-      border-bottom: 1px solid #e0e0e0;
+      font-size: 14px;
     }
     th {
       background: #e3f2fd;
       color: #0d47a1;
       font-weight: 600;
     }
-    tr:last-child td {
-      border-bottom: none;
+    tr:nth-child(even) {
+      background-color: #f9fbfd;
+    }
+    tr:hover {
+      background-color: #f1f8fe;
     }
     .status-operativo { color: #2e7d32; font-weight: 600; }
     .status-inoperativo { color: #d32f2f; font-weight: 600; }
     .status-extraviado { color: #f57c00; font-weight: 600; }
     .message {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 16px;
       min-height: 24px;
       font-size: 15px;
       font-weight: 500;
       color: #d32f2f;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 24px;
+      color: #666;
     }
   </style>
 </head>
@@ -200,6 +208,7 @@
       <a href="informacion.html" class="tab-link">ℹ️ Información</a>
     </div>
 
+    <!-- Búsqueda -->
     <div class="search-section">
       <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
       <button class="search-btn" id="searchBtn">Buscar</button>
@@ -207,8 +216,9 @@
 
     <div class="message" id="message"></div>
 
-    <div class="result-container" id="resultContainer">
-      <div class="result-title">Resultado de la búsqueda</div>
+    <!-- Resultado de búsqueda (si aplica) -->
+    <div id="searchResult" style="display: none;">
+      <div class="section-title">Resultado de la búsqueda</div>
       <table>
         <thead>
           <tr>
@@ -219,14 +229,36 @@
             <th>ID</th>
             <th>Dependencia</th>
             <th>Estado</th>
-            <th>Observaciones</th>
-            <th>Motivo</th>
+            <th>Fecha</th>
           </tr>
         </thead>
-        <tbody id="resultBody">
-          <!-- Se llenará con JS -->
-        </tbody>
+        <tbody id="searchResultBody"></tbody>
       </table>
+    </div>
+
+    <!-- Lista completa de radios -->
+    <div class="section-title">Todos los Radios Registrados</div>
+    <div id="loadingAll" style="text-align: center; color: #555;">Cargando registros...</div>
+    <div id="allRadiosContainer" style="display: none;">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Tipo</th>
+            <th>Serie</th>
+            <th>ID</th>
+            <th>Dependencia</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="allRadiosBody"></tbody>
+      </table>
+    </div>
+
+    <div id="noRadios" class="no-results" style="display: none;">
+      No hay radios registrados aún.
     </div>
   </div>
 
@@ -258,33 +290,83 @@
       link.classList.toggle('active', link.getAttribute('href') === currentPage);
     });
 
-    // Función para formatear motivo
-    function getMotivo(estado, motivo_inoperativo, motivo_extraviado) {
-      if (estado === 'Inoperativo' && motivo_inoperativo) return motivo_inoperativo;
-      if (estado === 'Extraviado' && motivo_extraviado) return motivo_extraviado;
-      return '—';
+    // Formatear fecha
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     }
 
-    // Función para mostrar estado con estilo
+    // Estado con estilo
     function getEstadoHTML(estado) {
       const cls = estado === 'Operativo' ? 'status-operativo' :
                   estado === 'Inoperativo' ? 'status-inoperativo' : 'status-extraviado';
       return `<span class="${cls}">${estado}</span>`;
     }
 
+    // Cargar todos los radios
+    async function cargarTodosLosRadios() {
+      const loading = document.getElementById('loadingAll');
+      const container = document.getElementById('allRadiosContainer');
+      const tbody = document.getElementById('allRadiosBody');
+      const noRadios = document.getElementById('noRadios');
+
+      try {
+        const { data, error } = await supabase
+          .from('radios')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (data.length === 0) {
+          noRadios.style.display = 'block';
+          container.style.display = 'none';
+        } else {
+          noRadios.style.display = 'none';
+          tbody.innerHTML = data.map(r => `
+            <tr>
+              <td>${formatDate(r.created_at)}</td>
+              <td>${r.marca || '—'}</td>
+              <td>${r.modelo || '—'}</td>
+              <td>${r.tipo || '—'}</td>
+              <td>${r.serial || '—'}</td>
+              <td>${r.codigo_id || '—'}</td>
+              <td>${r.dependencia || '—'}</td>
+              <td>${getEstadoHTML(r.estado)}</td>
+            </tr>
+          `).join('');
+          container.style.display = 'block';
+        }
+        loading.style.display = 'none';
+      } catch (err) {
+        console.error('Error al cargar radios:', err);
+        loading.textContent = '❌ Error al cargar los registros.';
+      }
+    }
+
     // Buscar radio
     async function buscarRadio(query) {
       const msg = document.getElementById('message');
-      const container = document.getElementById('resultContainer');
-      const tbody = document.getElementById('resultBody');
+      const searchRes = document.getElementById('searchResult');
+      const allRes = document.getElementById('allRadiosContainer');
+      const noRadios = document.getElementById('noRadios');
+      const tbody = document.getElementById('searchResultBody');
 
       if (!query.trim()) {
-        msg.textContent = 'Por favor ingrese un valor para buscar.';
-        container.style.display = 'none';
+        // Limpiar y mostrar lista completa
+        msg.textContent = '';
+        searchRes.style.display = 'none';
+        allRes.style.display = document.getElementById('loadingAll').style.display === 'none' ? 'table' : 'none';
+        noRadios.style.display = 'none';
         return;
       }
-
-      msg.textContent = '';
 
       try {
         const { data, error } = await supabase
@@ -296,45 +378,62 @@
 
         if (data.length === 0) {
           msg.textContent = '⚠️ No se encontró ningún radio con ese número de serie o código ID.';
-          container.style.display = 'none';
-          return;
+          searchRes.style.display = 'none';
+          allRes.style.display = 'none';
+          noRadios.style.display = 'none';
+        } else {
+          msg.textContent = '';
+          tbody.innerHTML = data.map(r => `
+            <tr>
+              <td>${r.marca || '—'}</td>
+              <td>${r.modelo || '—'}</td>
+              <td>${r.tipo || '—'}</td>
+              <td>${r.serial || '—'}</td>
+              <td>${r.codigo_id || '—'}</td>
+              <td>${r.dependencia || '—'}</td>
+              <td>${getEstadoHTML(r.estado)}</td>
+              <td>${formatDate(r.created_at)}</td>
+            </tr>
+          `).join('');
+          searchRes.style.display = 'block';
+          allRes.style.display = 'none';
+          noRadios.style.display = 'none';
         }
-
-        // Mostrar resultados
-        tbody.innerHTML = data.map(r => `
-          <tr>
-            <td>${r.marca || '—'}</td>
-            <td>${r.modelo || '—'}</td>
-            <td>${r.tipo || '—'}</td>
-            <td>${r.serial || '—'}</td>
-            <td>${r.codigo_id || '—'}</td>
-            <td>${r.dependencia || '—'}</td>
-            <td>${getEstadoHTML(r.estado)}</td>
-            <td>${r.observaciones || '—'}</td>
-            <td>${getMotivo(r.estado, r.motivo_inoperativo, r.motivo_extraviado)}</td>
-          </tr>
-        `).join('');
-
-        container.style.display = 'block';
       } catch (err) {
         console.error('Error al buscar:', err);
-        msg.textContent = '❌ Error al realizar la búsqueda. Intente más tarde.';
-        container.style.display = 'none';
+        msg.textContent = '❌ Error al realizar la búsqueda.';
+        searchRes.style.display = 'none';
+        allRes.style.display = 'none';
       }
     }
 
     // Eventos
+    const searchInput = document.getElementById('searchInput');
     document.getElementById('searchBtn').addEventListener('click', () => {
-      const q = document.getElementById('searchInput').value;
-      buscarRadio(q);
+      buscarRadio(searchInput.value);
     });
 
-    document.getElementById('searchInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        const q = document.getElementById('searchInput').value;
-        buscarRadio(q);
+    searchInput.addEventListener('input', () => {
+      if (searchInput.value.trim() === '') {
+        document.getElementById('message').textContent = '';
+        document.getElementById('searchResult').style.display = 'none';
+        // Volver a mostrar la lista completa
+        const loading = document.getElementById('loadingAll');
+        if (loading.style.display === 'none') {
+          document.getElementById('allRadiosContainer').style.display = 'table';
+          document.getElementById('noRadios').style.display = 'none';
+        }
       }
     });
+
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        buscarRadio(searchInput.value);
+      }
+    });
+
+    // Cargar todos los radios al inicio
+    cargarTodosLosRadios();
   </script>
 </body>
 </html>
