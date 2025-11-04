@@ -255,83 +255,75 @@
       });
     }
 
-    // Cargar estadísticas
-    async function cargarEstadisticas() {
-      try {
-        // Total de radios
-        const { count: total } = await supabase.from('radios').select('*', { count: 'exact', head: true });
+  async function cargarEstadisticas() {
+  try {
+    // Cargar TODOS los radios de una sola vez
+    const {  radiosData } = await supabase.from('radios').select('estado, tipo');
+    const total = radiosData ? radiosData.length : 0;
 
-        // Por estado
-        const { data: estadosData } = await supabase
-          .from('radios')
-          .select('estado');
-        let estados = [];
-        if (estadosData && estadosData.length > 0) {
-          const count = {};
-          estadosData.forEach(r => {
-            count[r.estado] = (count[r.estado] || 0) + 1;
-          });
-          estados = Object.entries(count).map(([label, count]) => ({ label, count }));
-        }
-
-        // Por tipo (siempre mostrar los 4 tipos posibles)
-        const tiposPosibles = [
-          'Portátil Motorola',
-          'Portátil Hytera',
-          'Móvil Motorola',
-          'Móvil Hytera'
-        ];
-        let tipos = [];
-        if (estadosData && estadosData.length > 0) {
-          const count = {};
-          tiposPosibles.forEach(tipo => count[tipo] = 0); // Inicializar en 0
-          estadosData.forEach(r => {
-            if (count.hasOwnProperty(r.tipo)) {
-              count[r.tipo] = (count[r.tipo] || 0) + 1;
-            }
-          });
-          tipos = tiposPosibles.map(label => ({ label, count: count[label] || 0 }));
-        } else {
-          // Si no hay datos, mostrar todos los tipos con 0
-          tipos = tiposPosibles.map(label => ({ label, count: 0 }));
-        }
-
-        const maxEstado = Math.max(...estados.map(e => e.count), 1);
-        const maxTipo = Math.max(...tipos.map(t => t.count), 1);
-
-        // Renderizar tarjetas
-        const statsGrid = document.getElementById('statsGrid');
-        statsGrid.innerHTML = `
-          <div class="stat-card">
-            <div class="stat-number">${total || 0}</div>
-            <div class="stat-label">Radios Totales</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${estados.find(e => e.label === 'Operativo')?.count || 0}</div>
-            <div class="stat-label">Operativos</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${estados.find(e => e.label === 'Inoperativo')?.count || 0}</div>
-            <div class="stat-label">Inoperativos</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${estados.find(e => e.label === 'Extraviado')?.count || 0}</div>
-            <div class="stat-label">Extraviados</div>
-          </div>
-        `;
-
-        // Renderizar gráficos
-        renderBarChart(estados, 'estadoChart', maxEstado);
-        renderBarChart(tipos, 'tipoChart', maxTipo);
-
-        document.getElementById('loadingStats').style.display = 'none';
-        document.getElementById('statsContent').style.display = 'block';
-      } catch (err) {
-        console.error('Error al cargar estadísticas:', err);
-        document.getElementById('loadingStats').textContent = '❌ Error al cargar los datos.';
-      }
+    // --- Distribución por Estado ---
+    let estados = [];
+    if (radiosData && radiosData.length > 0) {
+      const estadoCount = {};
+      radiosData.forEach(r => {
+        estadoCount[r.estado] = (estadoCount[r.estado] || 0) + 1;
+      });
+      estados = Object.entries(estadoCount).map(([label, count]) => ({ label, count }));
     }
 
+    // --- Distribución por Tipo (siempre los 4 tipos) ---
+    const tiposPosibles = [
+      'Portátil Motorola',
+      'Portátil Hytera',
+      'Móvil Motorola',
+      'Móvil Hytera'
+    ];
+    let tipos = tiposPosibles.map(label => ({ label, count: 0 })); // Inicializar en 0
+    if (radiosData && radiosData.length > 0) {
+      const tipoCount = {};
+      radiosData.forEach(r => {
+        tipoCount[r.tipo] = (tipoCount[r.tipo] || 0) + 1;
+      });
+      tipos = tiposPosibles.map(label => ({
+        label,
+        count: tipoCount[label] || 0
+      }));
+    }
+
+    const maxEstado = Math.max(...estados.map(e => e.count), 1);
+    const maxTipo = Math.max(...tipos.map(t => t.count), 1);
+
+    // Tarjetas
+    const statsGrid = document.getElementById('statsGrid');
+    statsGrid.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-number">${total}</div>
+        <div class="stat-label">Radios Totales</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${estados.find(e => e.label === 'Operativo')?.count || 0}</div>
+        <div class="stat-label">Operativos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${estados.find(e => e.label === 'Inoperativo')?.count || 0}</div>
+        <div class="stat-label">Inoperativos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${estados.find(e => e.label === 'Extraviado')?.count || 0}</div>
+        <div class="stat-label">Extraviados</div>
+      </div>
+    `;
+
+    renderBarChart(estados, 'estadoChart', maxEstado);
+    renderBarChart(tipos, 'tipoChart', maxTipo);
+
+    document.getElementById('loadingStats').style.display = 'none';
+    document.getElementById('statsContent').style.display = 'block';
+  } catch (err) {
+    console.error('Error al cargar estadísticas:', err);
+    document.getElementById('loadingStats').textContent = '❌ Error al cargar los datos.';
+  }
+}
     // Inicialización
     (async () => {
       try {
