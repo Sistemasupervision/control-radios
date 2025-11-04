@@ -170,66 +170,76 @@
   const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  // Verificar autenticación y rol
+  let userRol = 'consultor'; // valor por defecto seguro
+
+  // Función para configurar las pestañas según el rol
+  function configurarPestanas(rol) {
+    const tabsContainer = document.querySelector('.tabs');
+    if (!tabsContainer) return;
+
+    let tabsHTML = '';
+    if (rol === 'administrador') {
+      tabsHTML = `
+        <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+        <a href="registro.html" class="tab-link">➕ Registro</a>
+        <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
+        <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+      `;
+    } else {
+      // Consultor: puede ver panel (estadísticas), consulta e información
+      tabsHTML = `
+        <a href="panel.html" class="tab-link">📊 Panel</a>
+        <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+        <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+      `;
+    }
+
+    tabsContainer.innerHTML = tabsHTML;
+
+    // Resaltar pestaña activa
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === currentPage);
+    });
+  }
+
+  // Verificar autenticación y rol al cargar
   (async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {  { user } } = await supabase.auth.getUser();
       if (!user) {
         window.location.href = 'index.html';
         return;
       }
 
-      // Obtener el rol del usuario
-      const { data: perfil, error } = await supabase
+      // Obtener rol desde la tabla 'perfiles'
+      const {  perfil, error } = await supabase
         .from('perfiles')
         .select('rol')
         .eq('id', user.id)
         .single();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error al cargar perfil:', error);
-        window.location.href = 'index.html';
-        return;
       }
 
-      const rol = perfil.rol;
-      const tabsContainer = document.querySelector('.tabs');
-      let tabsHTML = '';
+      userRol = perfil?.rol || 'consultor';
+      configurarPestanas(userRol);
 
-      if (rol === 'administrador') {
-        // Mostrar todas las pestañas
-        tabsHTML = `
-          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
-          <a href="registro.html" class="tab-link">➕ Registro</a>
-          <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
-          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
-        `;
-      } else {
-        // Solo consulta e información
-        tabsHTML = `
-          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
-          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
-        `;
-      }
-
-      tabsContainer.innerHTML = tabsHTML;
-
-      // Resaltar pestaña activa
+      // Si es consultor y está en registro o modificaciones, redirigir
       const currentPage = window.location.pathname.split('/').pop();
-      document.querySelectorAll('.tab-link').forEach(link => {
-        if (link.getAttribute('href') === currentPage) {
-          link.classList.add('active');
-        }
-      });
+      if (userRol === 'consultor' && ['registro.html', 'modificaciones.html'].includes(currentPage)) {
+        window.location.href = 'panel.html';
+      }
 
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error de autenticación:', err);
       window.location.href = 'index.html';
     }
   })();
 
-  // Salir
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
+  // Botón de salir
+  document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     await supabase.auth.signOut();
     window.location.href = 'index.html';
   });
