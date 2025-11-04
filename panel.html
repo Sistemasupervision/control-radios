@@ -184,12 +184,11 @@
       </div>
     </div>
     <div class="tabs" id="dynamicTabs">
-      <!-- Se llenará con JavaScript -->
+      <!-- Se llenará con JavaScript según el rol -->
     </div>
     <div id="loadingStats" class="loading">Cargando estadísticas...</div>
     <div id="statsContent" style="display: none;">
       <div class="stats-grid" id="statsGrid"></div>
-      
       <div class="chart-section">
         <div class="chart-title">Distribución por Estado</div>
         <div id="estadoChart"></div>
@@ -229,13 +228,12 @@
       tabsContainer.innerHTML = tabsHTML;
     }
 
-    // Renderizar gráfico simple de barras
     function renderBarChart(data, containerId, maxCount) {
       const container = document.getElementById(containerId);
       container.innerHTML = '';
       data.forEach(item => {
         const percent = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-        const width = Math.max(5, percent); // Mínimo visible
+        const width = Math.max(5, percent);
         container.innerHTML += `
           <div class="chart-row">
             <div class="chart-label">${item.label}</div>
@@ -247,40 +245,37 @@
       });
     }
 
-    // Cargar estadísticas
     async function cargarEstadisticas() {
       try {
-        // Total de radios
+        // Total
         const { count: total } = await supabase.from('radios').select('*', { count: 'exact', head: true });
 
         // Por estado
-        const { data: estados } = await supabase
-          .from('radios')
-          .select('estado')
-          .then(res => {
-            const count = {};
-            res.data.forEach(r => {
-              count[r.estado] = (count[r.estado] || 0) + 1;
-            });
-            return Object.entries(count).map(([label, count]) => ({ label, count }));
+        const { data: estadosData } = await supabase.from('radios').select('estado');
+        let estados = [];
+        if (estadosData && estadosData.length > 0) {
+          const count = {};
+          estadosData.forEach(r => {
+            count[r.estado] = (count[r.estado] || 0) + 1;
           });
+          estados = Object.entries(count).map(([label, count]) => ({ label, count }));
+        }
 
         // Por tipo
-        const { data: tipos } = await supabase
-          .from('radios')
-          .select('tipo')
-          .then(res => {
-            const count = {};
-            res.data.forEach(r => {
-              count[r.tipo] = (count[r.tipo] || 0) + 1;
-            });
-            return Object.entries(count).map(([label, count]) => ({ label, count }));
+        const { data: tiposData } = await supabase.from('radios').select('tipo');
+        let tipos = [];
+        if (tiposData && tiposData.length > 0) {
+          const count = {};
+          tiposData.forEach(r => {
+            count[r.tipo] = (count[r.tipo] || 0) + 1;
           });
+          tipos = Object.entries(count).map(([label, count]) => ({ label, count }));
+        }
 
         const maxEstado = Math.max(...estados.map(e => e.count), 1);
         const maxTipo = Math.max(...tipos.map(t => t.count), 1);
 
-        // Renderizar tarjetas
+        // Tarjetas
         const statsGrid = document.getElementById('statsGrid');
         statsGrid.innerHTML = `
           <div class="stat-card">
@@ -301,7 +296,6 @@
           </div>
         `;
 
-        // Renderizar gráficos
         renderBarChart(estados, 'estadoChart', maxEstado);
         renderBarChart(tipos, 'tipoChart', maxTipo);
 
@@ -309,7 +303,7 @@
         document.getElementById('statsContent').style.display = 'block';
       } catch (err) {
         console.error('Error al cargar estadísticas:', err);
-        document.getElementById('loadingStats').textContent = '❌ Error al cargar los datos.';
+        document.getElementById('loadingStats').textContent = '❌ No se pudieron cargar las estadísticas.';
       }
     }
 
