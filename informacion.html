@@ -6,6 +6,7 @@
   <title>Información | Control de Radios</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* ... (tu CSS igual, sin cambios) ... */
     * {
       margin: 0;
       padding: 0;
@@ -109,7 +110,6 @@
       background: white;
       box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
     }
-
     .info-section {
       margin-bottom: 28px;
     }
@@ -162,11 +162,10 @@
         <button class="logout-btn" id="logoutBtn">Salir</button>
       </div>
     </div>
-
-    <div class="tabs">
-      <!-- Se llenará dinámicamente con JavaScript -->
+    <div class="tabs" id="dynamicTabs">
+      <!-- Se llenará con JavaScript -->
     </div>
-
+    <!-- (contenido informativo igual) -->
     <div class="info-section">
       <h2>🎯 Propósito del Sistema</h2>
       <p>
@@ -174,7 +173,6 @@
         con el fin de garantizar un control eficiente, trazabilidad y mantenimiento del inventario de equipos de comunicación.
       </p>
     </div>
-
     <div class="info-section">
       <h2>✅ Funcionalidades</h2>
       <ul class="info-list">
@@ -184,7 +182,6 @@
         <li><span class="highlight">Estadísticas</span>: Resumen en el panel principal con totales por estado y tipo de radio.</li>
       </ul>
     </div>
-
     <div class="info-section">
       <h2>📋 Reglas de Registro</h2>
       <ul class="info-list">
@@ -195,7 +192,6 @@
         <li>Se debe especificar si el radio <strong>posee Tipo C</strong> (Sí/No).</li>
       </ul>
     </div>
-
     <div class="info-section">
       <h2>📞 Soporte Técnico</h2>
       <p>
@@ -208,13 +204,12 @@
         <strong>Nota:</strong> Este sistema es de uso exclusivo para personal autorizado del CPNB.
       </p>
     </div>
-
     <div class="footer-note">
       <p>Versión 1.0 • Sistema de Control de Radios – CPNB • © 2025</p>
     </div>
   </div>
-
   <script type="module">
+    // ✅ URLs CORREGIDAS: sin espacios
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
@@ -222,45 +217,36 @@
 
     let userRol = 'consultor';
 
-    // Función para configurar pestañas según rol
     function configurarPestanas(rol) {
-      const tabsContainer = document.querySelector('.tabs');
+      const tabsContainer = document.getElementById('dynamicTabs');
       if (!tabsContainer) return;
-
       let tabsHTML = '';
       if (rol === 'administrador') {
         tabsHTML = `
           <a href="consulta.html" class="tab-link">🔍 Consulta</a>
           <a href="registro.html" class="tab-link">➕ Registro</a>
           <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
-          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+          <a href="informacion.html" class="tab-link active">ℹ️ Información</a>
         `;
       } else {
         tabsHTML = `
           <a href="panel.html" class="tab-link">📊 Panel</a>
           <a href="consulta.html" class="tab-link">🔍 Consulta</a>
-          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+          <a href="informacion.html" class="tab-link active">ℹ️ Información</a>
         `;
       }
-
       tabsContainer.innerHTML = tabsHTML;
-
-      const currentPage = window.location.pathname.split('/').pop();
-      document.querySelectorAll('.tab-link').forEach(link => {
-        link.classList.toggle('active', link.getAttribute('href') === currentPage);
-      });
     }
 
-    // Verificar autenticación y rol
     (async () => {
       try {
-        const {  { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           window.location.href = 'index.html';
           return;
         }
 
-        const {  perfil, error } = await supabase
+        const { data: perfil, error } = await supabase
           .from('perfiles')
           .select('rol')
           .eq('id', user.id)
@@ -269,19 +255,18 @@
         userRol = perfil?.rol || 'consultor';
         configurarPestanas(userRol);
 
-        // Redirigir si es consultor y está en página restringida
+        // Redirigir si consultor entra a páginas restringidas
         const currentPage = window.location.pathname.split('/').pop();
         if (userRol === 'consultor' && ['registro.html', 'modificaciones.html'].includes(currentPage)) {
           window.location.href = 'panel.html';
         }
-
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Error en autenticación:', err);
         window.location.href = 'index.html';
       }
     })();
 
-    // Salir
+    // ✅ Botón salir (ahora funciona)
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
