@@ -144,18 +144,18 @@
       color: #0d47a1;
     }
 
-    /* Tarjeta de resultado detallado */
+    /* Tarjetas de resultado */
     .result-card {
       background: #f8fbff;
       border: 1px solid #e1eaf4;
       border-radius: 16px;
       padding: 24px;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.06);
     }
     .card-row {
       display: flex;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .card-label {
       font-weight: 600;
@@ -173,7 +173,7 @@
     .tipo-c-si { color: #1976d2; font-weight: 600; }
     .tipo-c-no { color: #90a4ae; font-style: italic; }
 
-    /* Tabla de todos los radios */
+    /* Tabla principal */
     .radios-table {
       width: 100%;
       border-collapse: collapse;
@@ -192,12 +192,13 @@
     }
     .radios-table tbody tr {
       border-bottom: 1px solid #eee;
-    }
-    .radios-table tbody tr:last-child {
-      border-bottom: none;
+      cursor: pointer;
     }
     .radios-table tbody tr:hover {
       background-color: #f5f9ff;
+    }
+    .radios-table tbody tr:last-child {
+      border-bottom: none;
     }
 
     .message {
@@ -273,18 +274,21 @@
 
     <div class="message" id="message"></div>
 
-    <!-- Resultado detallado -->
+    <!-- Resultado de búsqueda -->
     <div id="searchResult" style="display: none;">
       <div class="section-title">Resultado de la búsqueda</div>
       <div class="result-card" id="resultCard"></div>
     </div>
 
-    <!-- Lista completa -->
+    <!-- Lista principal -->
     <div class="section-title">Todos los Radios Registrados</div>
-<div id="clickedResult" style="display: none; margin-top: 20px;">
-  <div class="section-title">Detalles del Radio Seleccionado</div>
-  <div class="result-card" id="clickedResultCard"></div>
-</div>
+
+    <!-- Tarjeta al hacer clic -->
+    <div id="clickedResult" style="display: none; margin-top: 20px;">
+      <div class="section-title">Detalles del Radio Seleccionado</div>
+      <div class="result-card" id="clickedResultCard"></div>
+    </div>
+
     <div id="loadingAll" style="text-align: center; color: #555;">Cargando registros...</div>
     <div id="allRadiosContainer" style="display: none;">
       <table class="radios-table">
@@ -326,7 +330,7 @@
     let currentPage = 1;
     const ITEMS_PER_PAGE = 10;
 
-    // Autenticación
+    // Verificar autenticación
     (async () => {
       try {
         const { data } = await supabase.auth.getUser();
@@ -336,16 +340,19 @@
       }
     })();
 
+    // Salir
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
+    // Pestaña activa
     const currentPageUrl = window.location.pathname.split('/').pop();
     document.querySelectorAll('.tab-link').forEach(link => {
       link.classList.toggle('active', link.getAttribute('href') === currentPageUrl);
     });
 
+    // Formatear fecha
     function formatDate(dateStr) {
       if (!dateStr) return '—';
       const d = new Date(dateStr);
@@ -358,12 +365,14 @@
       });
     }
 
+    // Estado con estilo
     function getEstadoHTML(estado) {
       const cls = estado === 'Operativo' ? 'status-operativo' :
                   estado === 'Inoperativo' ? 'status-inoperativo' : 'status-extraviado';
       return `<span class="${cls}">${estado}</span>`;
     }
 
+    // Tipo C con estilo
     function getTipoCHTML(tipo_c) {
       if (tipo_c === 'Sí') return `<span class="tipo-c-si">Sí</span>`;
       if (tipo_c === 'No') return `<span class="tipo-c-no">No</span>`;
@@ -371,69 +380,67 @@
     }
 
     // Renderizar tarjeta detallada
-function renderResultCard(radio, targetId = 'resultCard') {
-  const motivo = radio.estado === 'Inoperativo' && radio.motivo_inoperativo ? radio.motivo_inoperativo :
-                 radio.estado === 'Extraviado' && radio.motivo_extraviado ? radio.motivo_extraviado : '—';
+    function renderResultCard(radio, targetId = 'resultCard') {
+      const motivo = radio.estado === 'Inoperativo' && radio.motivo_inoperativo ? radio.motivo_inoperativo :
+                     radio.estado === 'Extraviado' && radio.motivo_extraviado ? radio.motivo_extraviado : '—';
 
-  const html = `
-    <div class="card-row"><div class="card-label">Número de Serie:</div><div class="card-value">${radio.serial || '—'}</div></div>
-    <div class="card-row"><div class="card-label">Código ID:</div><div class="card-value">${radio.codigo_id || '—'}</div></div>
-    <div class="card-row"><div class="card-label">Marca:</div><div class="card-value">${radio.marca || '—'}</div></div>
-    <div class="card-row"><div class="card-label">Modelo:</div><div class="card-value">${radio.modelo || '—'}</div></div>
-    <div class="card-row"><div class="card-label">Tipo de Radio:</div><div class="card-value">${radio.tipo || '—'}</div></div>
-    <div class="card-row"><div class="card-label">Dependencia:</div><div class="card-value">${radio.dependencia || '—'}</div></div>
-    <div class="card-row"><div class="card-label">Posee Tipo C:</div><div class="card-value">${getTipoCHTML(radio.tipo_c)}</div></div>
-    <div class="card-row"><div class="card-label">Estado:</div><div class="card-value">${getEstadoHTML(radio.estado)}</div></div>
-    <div class="card-row"><div class="card-label">Observaciones:</div><div class="card-value">${radio.observaciones || '—'}</div></div>
-    <div class="card-row"><div class="card-label">Motivo:</div><div class="card-value">${motivo}</div></div>
-    <div class="card-row"><div class="card-label">Registrado:</div><div class="card-value">${formatDate(radio.created_at)}</div></div>
-  `;
-  document.getElementById(targetId).innerHTML = html;
-}
+      const html = `
+        <div class="card-row"><div class="card-label">Número de Serie:</div><div class="card-value">${radio.serial || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Código ID:</div><div class="card-value">${radio.codigo_id || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Marca:</div><div class="card-value">${radio.marca || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Modelo:</div><div class="card-value">${radio.modelo || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Tipo de Radio:</div><div class="card-value">${radio.tipo || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Dependencia:</div><div class="card-value">${radio.dependencia || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Posee Tipo C:</div><div class="card-value">${getTipoCHTML(radio.tipo_c)}</div></div>
+        <div class="card-row"><div class="card-label">Estado:</div><div class="card-value">${getEstadoHTML(radio.estado)}</div></div>
+        <div class="card-row"><div class="card-label">Observaciones:</div><div class="card-value">${radio.observaciones || '—'}</div></div>
+        <div class="card-row"><div class="card-label">Motivo:</div><div class="card-value">${motivo}</div></div>
+        <div class="card-row"><div class="card-label">Registrado:</div><div class="card-value">${formatDate(radio.created_at)}</div></div>
+      `;
+      document.getElementById(targetId).innerHTML = html;
+    }
 
-    // Renderizar página de lista
-  function renderPage(page) {
-  const start = (page - 1) * ITEMS_PER_PAGE;
-  const end = start + ITEMS_PER_PAGE;
-  const pageData = allRadios.slice(start, end);
-  const tbody = document.getElementById('allRadiosBody');
-  const totalPages = Math.ceil(allRadios.length / ITEMS_PER_PAGE);
+    // Renderizar página con eventos de clic
+    function renderPage(page) {
+      const start = (page - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const pageData = allRadios.slice(start, end);
+      const tbody = document.getElementById('allRadiosBody');
+      const totalPages = Math.ceil(allRadios.length / ITEMS_PER_PAGE);
 
-  tbody.innerHTML = pageData.map(r => `
-    <tr data-id="${r.id}" style="cursor: pointer;">
-      <td><strong>${r.serial || '—'}</strong></td>
-      <td>${r.codigo_id || '—'}</td>
-      <td>${r.tipo.split(' ')[0] || '—'}</td>
-      <td>${r.marca || '—'}</td>
-      <td>${r.modelo || '—'}</td>
-      <td>${(r.dependencia || '').substring(0,12) + (r.dependencia?.length > 12 ? '…' : '')}</td>
-      <td>${r.tipo_c === 'Sí' ? '✅' : '—'}</td>
-      <td>${getEstadoHTML(r.estado)}</td>
-      <td>${formatDate(r.created_at).split(' ')[0]}</td>
-    </tr>
-  `).join('');
+      tbody.innerHTML = pageData.map(r => `
+        <tr data-id="${r.id}">
+          <td><strong>${r.serial || '—'}</strong></td>
+          <td>${r.codigo_id || '—'}</td>
+          <td>${r.tipo.split(' ')[0] || '—'}</td>
+          <td>${r.marca || '—'}</td>
+          <td>${r.modelo || '—'}</td>
+          <td>${(r.dependencia || '').substring(0,12)}${r.dependencia?.length > 12 ? '…' : ''}</td>
+          <td>${r.tipo_c === 'Sí' ? '✅' : '—'}</td>
+          <td>${getEstadoHTML(r.estado)}</td>
+          <td>${formatDate(r.created_at).split(' ')[0]}</td>
+        </tr>
+      `).join('');
 
-  // Añadir evento de clic a cada fila
-  tbody.querySelectorAll('tr').forEach(row => {
-    row.addEventListener('click', () => {
-      const id = parseInt(row.dataset.id);
-      const radio = allRadios.find(r => r.id === id);
-      if (radio) {
-        renderResultCard(radio, 'clickedResultCard');
-        document.getElementById('clickedResult').style.display = 'block';
-        
-        // Opcional: scroll suave a la tarjeta
-        document.getElementById('clickedResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
-  });
+      // Añadir evento de clic a cada fila
+      tbody.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('click', () => {
+          const id = parseInt(row.dataset.id);
+          const radio = allRadios.find(r => r.id === id);
+          if (radio) {
+            renderResultCard(radio, 'clickedResultCard');
+            document.getElementById('clickedResult').style.display = 'block';
+            document.getElementById('clickedResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
 
-  document.getElementById('pageInfo').textContent = `Página ${page} de ${totalPages || 1}`;
-  document.getElementById('prevPage').disabled = page === 1;
-  document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
-}
+      document.getElementById('pageInfo').textContent = `Página ${page} de ${totalPages || 1}`;
+      document.getElementById('prevPage').disabled = page === 1;
+      document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
+    }
 
-    // Cargar todos
+    // Cargar todos los radios
     async function cargarTodosLosRadios() {
       const loading = document.getElementById('loadingAll');
       const container = document.getElementById('allRadiosContainer');
@@ -460,21 +467,23 @@ function renderResultCard(radio, targetId = 'resultCard') {
         }
         loading.style.display = 'none';
       } catch (err) {
-        console.error('Error:', err);
-        loading.textContent = '❌ Error al cargar.';
+        console.error('Error al cargar radios:', err);
+        loading.textContent = '❌ Error al cargar los registros.';
       }
     }
 
-    // Buscar
+    // Buscar radio
     async function buscarRadio(query) {
       const msg = document.getElementById('message');
       const searchRes = document.getElementById('searchResult');
+      const clickedRes = document.getElementById('clickedResult');
       const allRes = document.getElementById('allRadiosContainer');
       const noRadios = document.getElementById('noRadios');
 
       if (!query.trim()) {
         msg.textContent = '';
         searchRes.style.display = 'none';
+        clickedRes.style.display = 'none';
         allRes.style.display = allRadios.length > 0 ? 'block' : 'none';
         noRadios.style.display = allRadios.length === 0 ? 'block' : 'none';
         return;
@@ -491,19 +500,22 @@ function renderResultCard(radio, targetId = 'resultCard') {
         if (data.length === 0) {
           msg.textContent = '⚠️ Radio no encontrado.';
           searchRes.style.display = 'none';
+          clickedRes.style.display = 'none';
           allRes.style.display = 'none';
           noRadios.style.display = 'none';
         } else {
           msg.textContent = '';
-          renderResultCard(data[0]); // mostramos el primero (debería ser único)
+          renderResultCard(data[0]);
           searchRes.style.display = 'block';
+          clickedRes.style.display = 'none';
           allRes.style.display = 'none';
           noRadios.style.display = 'none';
         }
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Error en la búsqueda:', err);
         msg.textContent = '❌ Error en la búsqueda.';
         searchRes.style.display = 'none';
+        clickedRes.style.display = 'none';
         allRes.style.display = 'none';
       }
     }
@@ -533,6 +545,7 @@ function renderResultCard(radio, targetId = 'resultCard') {
       if (searchInput.value.trim() === '') {
         document.getElementById('message').textContent = '';
         document.getElementById('searchResult').style.display = 'none';
+        document.getElementById('clickedResult').style.display = 'none';
         document.getElementById('allRadiosContainer').style.display = allRadios.length > 0 ? 'block' : 'none';
         document.getElementById('noRadios').style.display = allRadios.length === 0 ? 'block' : 'none';
       }
@@ -544,6 +557,7 @@ function renderResultCard(radio, targetId = 'resultCard') {
       }
     });
 
+    // Cargar al inicio
     cargarTodosLosRadios();
   </script>
 </body>
