@@ -286,27 +286,85 @@
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Verificar autenticación
-    (async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        if (!data.user) window.location.href = 'index.html';
-      } catch (err) {
-        window.location.href = 'index.html';
-      }
-    })();
+  let userRol = 'consultor'; // valor por defecto seguro
 
-    // Botón de salir
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.href = 'index.html';
+  // Función para configurar las pestañas según el rol
+  function configurarPestanas(rol) {
+    const tabsContainer = document.querySelector('.tabs');
+    if (!tabsContainer) return;
+
+    let tabsHTML = '';
+    if (rol === 'administrador') {
+      tabsHTML = `
+        <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+        <a href="registro.html" class="tab-link">➕ Registro</a>
+        <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
+        <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+      `;
+    } else {
+      // Consultor: puede ver panel (estadísticas), consulta e información
+      tabsHTML = `
+        <a href="panel.html" class="tab-link">📊 Panel</a>
+        <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+        <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+      `;
+    }
+
+    tabsContainer.innerHTML = tabsHTML;
+
+    // Resaltar pestaña activa
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === currentPage);
     });
+  }
 
+  // Verificar autenticación y rol al cargar
+  (async () => {
+    try {
+      const {  { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Obtener rol desde la tabla 'perfiles'
+      const {  perfil, error } = await supabase
+        .from('perfiles')
+        .select('rol')
+        .eq('id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error al cargar perfil:', error);
+      }
+
+      userRol = perfil?.rol || 'consultor';
+      configurarPestanas(userRol);
+
+      // Si es consultor y está en registro o modificaciones, redirigir
+      const currentPage = window.location.pathname.split('/').pop();
+      if (userRol === 'consultor' && ['registro.html', 'modificaciones.html'].includes(currentPage)) {
+        window.location.href = 'panel.html';
+      }
+
+    } catch (err) {
+      console.error('Error de autenticación:', err);
+      window.location.href = 'index.html';
+    }
+  })();
+
+  // Botón de salir
+  document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
+  });
     // Resaltar pestaña activa
     const currentPage = window.location.pathname.split('/').pop();
     document.querySelectorAll('.tab-link').forEach(link => {
