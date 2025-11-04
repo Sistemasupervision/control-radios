@@ -186,6 +186,36 @@
       padding: 24px;
       color: #666;
     }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .pagination-btn {
+      background: #e3f2fd;
+      color: #0d47a1;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .pagination-btn:hover:not(:disabled) {
+      background: #bbdefb;
+    }
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .page-info {
+      font-size: 15px;
+      font-weight: 500;
+      color: #37474f;
+    }
   </style>
 </head>
 <body>
@@ -216,7 +246,7 @@
 
     <div class="message" id="message"></div>
 
-    <!-- Resultado de búsqueda (si aplica) -->
+    <!-- Resultado de búsqueda -->
     <div id="searchResult" style="display: none;">
       <div class="section-title">Resultado de la búsqueda</div>
       <table>
@@ -236,7 +266,7 @@
       </table>
     </div>
 
-    <!-- Lista completa de radios -->
+    <!-- Lista completa con paginación -->
     <div class="section-title">Todos los Radios Registrados</div>
     <div id="loadingAll" style="text-align: center; color: #555;">Cargando registros...</div>
     <div id="allRadiosContainer" style="display: none;">
@@ -255,6 +285,12 @@
         </thead>
         <tbody id="allRadiosBody"></tbody>
       </table>
+
+      <div class="pagination">
+        <button id="prevPage" class="pagination-btn" disabled>« Anterior</button>
+        <span class="page-info" id="pageInfo">Página 1 de 1</span>
+        <button id="nextPage" class="pagination-btn" disabled>Siguiente »</button>
+      </div>
     </div>
 
     <div id="noRadios" class="no-results" style="display: none;">
@@ -267,6 +303,11 @@
     const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    // Estado global
+    let allRadios = [];
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 10;
 
     // Verificar autenticación
     (async () => {
@@ -285,9 +326,9 @@
     });
 
     // Pestaña activa
-    const currentPage = window.location.pathname.split('/').pop();
+    const currentPageUrl = window.location.pathname.split('/').pop();
     document.querySelectorAll('.tab-link').forEach(link => {
-      link.classList.toggle('active', link.getAttribute('href') === currentPage);
+      link.classList.toggle('active', link.getAttribute('href') === currentPageUrl);
     });
 
     // Formatear fecha
@@ -310,11 +351,38 @@
       return `<span class="${cls}">${estado}</span>`;
     }
 
-    // Cargar todos los radios
+    // Renderizar página actual
+    function renderPage(page) {
+      const start = (page - 1) * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const pageData = allRadios.slice(start, end);
+      const tbody = document.getElementById('allRadiosBody');
+      const pageInfo = document.getElementById('pageInfo');
+      const totalPages = Math.ceil(allRadios.length / ITEMS_PER_PAGE);
+
+      tbody.innerHTML = pageData.map(r => `
+        <tr>
+          <td>${formatDate(r.created_at)}</td>
+          <td>${r.marca || '—'}</td>
+          <td>${r.modelo || '—'}</td>
+          <td>${r.tipo || '—'}</td>
+          <td>${r.serial || '—'}</td>
+          <td>${r.codigo_id || '—'}</td>
+          <td>${r.dependencia || '—'}</td>
+          <td>${getEstadoHTML(r.estado)}</td>
+        </tr>
+      `).join('');
+
+      pageInfo.textContent = `Página ${page} de ${totalPages || 1}`;
+
+      document.getElementById('prevPage').disabled = page === 1;
+      document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
+    }
+
+    // Cargar todos los radios (una sola vez)
     async function cargarTodosLosRadios() {
       const loading = document.getElementById('loadingAll');
       const container = document.getElementById('allRadiosContainer');
-      const tbody = document.getElementById('allRadiosBody');
       const noRadios = document.getElementById('noRadios');
 
       try {
@@ -325,24 +393,16 @@
 
         if (error) throw error;
 
+        allRadios = data;
+        currentPage = 1;
+
         if (data.length === 0) {
           noRadios.style.display = 'block';
           container.style.display = 'none';
         } else {
           noRadios.style.display = 'none';
-          tbody.innerHTML = data.map(r => `
-            <tr>
-              <td>${formatDate(r.created_at)}</td>
-              <td>${r.marca || '—'}</td>
-              <td>${r.modelo || '—'}</td>
-              <td>${r.tipo || '—'}</td>
-              <td>${r.serial || '—'}</td>
-              <td>${r.codigo_id || '—'}</td>
-              <td>${r.dependencia || '—'}</td>
-              <td>${getEstadoHTML(r.estado)}</td>
-            </tr>
-          `).join('');
           container.style.display = 'block';
+          renderPage(currentPage);
         }
         loading.style.display = 'none';
       } catch (err) {
@@ -351,7 +411,7 @@
       }
     }
 
-    // Buscar radio
+    // Buscar radio (sin paginación)
     async function buscarRadio(query) {
       const msg = document.getElementById('message');
       const searchRes = document.getElementById('searchResult');
@@ -360,11 +420,10 @@
       const tbody = document.getElementById('searchResultBody');
 
       if (!query.trim()) {
-        // Limpiar y mostrar lista completa
         msg.textContent = '';
         searchRes.style.display = 'none';
-        allRes.style.display = document.getElementById('loadingAll').style.display === 'none' ? 'table' : 'none';
-        noRadios.style.display = 'none';
+        allRes.style.display = allRadios.length > 0 ? 'block' : 'none';
+        noRadios.style.display = allRadios.length === 0 ? 'block' : 'none';
         return;
       }
 
@@ -407,7 +466,23 @@
       }
     }
 
-    // Eventos
+    // Eventos de paginación
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderPage(currentPage);
+      }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      const totalPages = Math.ceil(allRadios.length / ITEMS_PER_PAGE);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderPage(currentPage);
+      }
+    });
+
+    // Eventos de búsqueda
     const searchInput = document.getElementById('searchInput');
     document.getElementById('searchBtn').addEventListener('click', () => {
       buscarRadio(searchInput.value);
@@ -417,12 +492,8 @@
       if (searchInput.value.trim() === '') {
         document.getElementById('message').textContent = '';
         document.getElementById('searchResult').style.display = 'none';
-        // Volver a mostrar la lista completa
-        const loading = document.getElementById('loadingAll');
-        if (loading.style.display === 'none') {
-          document.getElementById('allRadiosContainer').style.display = 'table';
-          document.getElementById('noRadios').style.display = 'none';
-        }
+        document.getElementById('allRadiosContainer').style.display = allRadios.length > 0 ? 'block' : 'none';
+        document.getElementById('noRadios').style.display = allRadios.length === 0 ? 'block' : 'none';
       }
     });
 
@@ -432,7 +503,7 @@
       }
     });
 
-    // Cargar todos los radios al inicio
+    // Cargar datos al inicio
     cargarTodosLosRadios();
   </script>
 </body>
