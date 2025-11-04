@@ -164,96 +164,75 @@
     </div>
   </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Verificar autenticación y cargar estadísticas
-    (async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        if (!data.user) {
-          window.location.href = 'index.html';
-        } else {
-          await cargarEstadisticas();
-        }
-      } catch (err) {
-        console.error('Error de autenticación:', err);
+  // Verificar autenticación y rol
+  (async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         window.location.href = 'index.html';
+        return;
       }
-    })();
 
-    // Función para cargar estadísticas desde Supabase
-    async function cargarEstadisticas() {
-      const loading = document.getElementById('loading');
-      const statsContent = document.getElementById('stats-content');
-      const detailContent = document.getElementById('detail-content');
-      const tbody = document.getElementById('detail-body');
+      // Obtener el rol del usuario
+      const { data: perfil, error } = await supabase
+        .from('perfiles')
+        .select('rol')
+        .eq('id', user.id)
+        .single();
 
-      try {
-        const { data: radios, error } = await supabase
-          .from('radios')
-          .select('tipo, estado');
-
-        if (error) throw error;
-
-        const total = radios.length;
-        const operativos = radios.filter(r => r.estado === 'Operativo').length;
-        const inoperativos = radios.filter(r => r.estado === 'Inoperativo').length;
-        const extraviados = radios.filter(r => r.estado === 'Extraviado').length;
-
-        document.getElementById('total-general').textContent = total;
-        document.getElementById('total-operativos').textContent = operativos;
-        document.getElementById('total-inoperativos').textContent = inoperativos;
-        document.getElementById('total-extraviados').textContent = extraviados;
-
-        const tipos = ['Portátil Motorola', 'Portátil Hytera', 'Móvil Motorola', 'Móvil Hytera'];
-        const filas = tipos.map(tipo => {
-          const items = radios.filter(r => r.tipo === tipo);
-          const op = items.filter(i => i.estado === 'Operativo').length;
-          const inop = items.filter(i => i.estado === 'Inoperativo').length;
-          const ext = items.filter(i => i.estado === 'Extraviado').length;
-          const tot = items.length;
-          return `
-            <tr style="border-bottom: 1px solid #eee;">
-              <td style="padding: 12px; font-weight: 500;">${tipo}</td>
-              <td style="padding: 12px; text-align: center; color: #2e7d32;">${op}</td>
-              <td style="padding: 12px; text-align: center; color: #d32f2f;">${inop}</td>
-              <td style="padding: 12px; text-align: center; color: #f57c00;">${ext}</td>
-              <td style="padding: 12px; text-align: center; font-weight: 600;">${tot}</td>
-            </tr>
-          `;
-        }).join('');
-
-        tbody.innerHTML = filas;
-        loading.style.display = 'none';
-        statsContent.style.display = 'grid';
-        detailContent.style.display = 'block';
-
-      } catch (err) {
-        console.error('Error al cargar estadísticas:', err);
-        loading.textContent = '⚠️ No se pudieron cargar las estadísticas.';
+      if (error) {
+        console.error('Error al cargar perfil:', error);
+        window.location.href = 'index.html';
+        return;
       }
-    }
 
-    // Botón de salir
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.href = 'index.html';
-    });
+      const rol = perfil.rol;
+      const tabsContainer = document.querySelector('.tabs');
+      let tabsHTML = '';
 
-    // Resaltar pestaña activa
-    const currentPage = window.location.pathname.split('/').pop();
-    document.querySelectorAll('.tab-link').forEach(link => {
-      const href = link.getAttribute('href');
-      if (href === currentPage) {
-        link.classList.add('active');
+      if (rol === 'administrador') {
+        // Mostrar todas las pestañas
+        tabsHTML = `
+          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+          <a href="registro.html" class="tab-link">➕ Registro</a>
+          <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
+          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+        `;
       } else {
-        link.classList.remove('active');
+        // Solo consulta e información
+        tabsHTML = `
+          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+        `;
       }
-    });
-  </script>
+
+      tabsContainer.innerHTML = tabsHTML;
+
+      // Resaltar pestaña activa
+      const currentPage = window.location.pathname.split('/').pop();
+      document.querySelectorAll('.tab-link').forEach(link => {
+        if (link.getAttribute('href') === currentPage) {
+          link.classList.add('active');
+        }
+      });
+
+    } catch (err) {
+      console.error('Error:', err);
+      window.location.href = 'index.html';
+    }
+  })();
+
+  // Salir
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
+  });
+</script>
 </body>
 </html>
