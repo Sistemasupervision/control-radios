@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Consulta | Control de Radios</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+    body {
+      background-image: url('fondo.png');
+      background-size: cover;
+      background-position: right top;
+      background-repeat: no-repeat;
+      color: #0d47a1;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(4px);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .header-left {
+      text-align: center;
+      flex: 1;
+    }
+    .logo-img {
+      max-width: 100px;
+      margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0d47a1;
+    }
+    .logout-btn {
+      background: #d32f2f;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      transition: background 0.2s;
+    }
+    .logout-btn:hover {
+      background: #b71c1c;
+    }
+    .panel-btn {
+      background: #1976d2;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: background 0.2s;
+      text-align: center;
+    }
+    .panel-btn:hover {
+      background: #1565c0;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 2px;
+      background: #f0f4f8;
+      padding: 6px;
+      border-radius: 14px;
+      margin-bottom: 32px;
+    }
+    .tab-link {
+      flex: 1;
+      text-align: center;
+      padding: 14px 8px;
+      text-decoration: none;
+      color: #546e7a;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.25s ease;
+    }
+    .tab-link:hover {
+      color: #1976d2;
+      background: #e3f2fd;
+    }
+    .tab-link.active {
+      color: #1976d2;
+      background: white;
+      box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
+    }
+
+    .search-section {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #90a4ae;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .search-btn {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 0 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .search-btn:hover {
+      background: #1565c0;
+    }
+
+    .result-container {
+      display: none;
+    }
+    .result-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #0d47a1;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    th, td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    th {
+      background: #e3f2fd;
+      color: #0d47a1;
+      font-weight: 600;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .status-operativo { color: #2e7d32; font-weight: 600; }
+    .status-inoperativo { color: #d32f2f; font-weight: 600; }
+    .status-extraviado { color: #f57c00; font-weight: 600; }
+    .message {
+      text-align: center;
+      margin-top: 20px;
+      min-height: 24px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
+        <h1>Control de Radios – CPNB</h1>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="panel.html" class="panel-btn">📊 Panel</a>
+        <button class="logout-btn" id="logoutBtn">Salir</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <a href="consulta.html" class="tab-link active">🔍 Consulta</a>
+      <a href="registro.html" class="tab-link">➕ Registro</a>
+      <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
+      <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+    </div>
+
+    <div class="search-section">
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
+      <button class="search-btn" id="searchBtn">Buscar</button>
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <div class="result-container" id="resultContainer">
+      <div class="result-title">Resultado de la búsqueda</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Tipo</th>
+            <th>Serie</th>
+            <th>ID</th>
+            <th>Dependencia</th>
+            <th>Estado</th>
+            <th>Observaciones</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody">
+          <!-- Se llenará con JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    // Verificar autenticación
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data.user) window.location.href = 'index.html';
+      } catch (err) {
+        window.location.href = 'index.html';
+      }
+    })();
+
+    // Salir
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    // Pestaña activa
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === currentPage);
+    });
+
+    // Función para formatear motivo
+    function getMotivo(estado, motivo_inoperativo, motivo_extraviado) {
+      if (estado === 'Inoperativo' && motivo_inoperativo) return motivo_inoperativo;
+      if (estado === 'Extraviado' && motivo_extraviado) return motivo_extraviado;
+      return '—';
+    }
+
+    // Función para mostrar estado con estilo
+    function getEstadoHTML(estado) {
+      const cls = estado === 'Operativo' ? 'status-operativo' :
+                  estado === 'Inoperativo' ? 'status-inoperativo' : 'status-extraviado';
+      return `<span class="${cls}">${estado}</span>`;
+    }
+
+    // Buscar radio
+    async function buscarRadio(query) {
+      const msg = document.getElementById('message');
+      const container = document.getElementById('resultContainer');
+      const tbody = document.getElementById('resultBody');
+
+      if (!query.trim()) {
+        msg.textContent = 'Por favor ingrese un valor para buscar.';
+        container.style.display = 'none';
+        return;
+      }
+
+      msg.textContent = '';
+
+      try {
+        const { data, error } = await supabase
+          .from('radios')
+          .select('*')
+          .or(`serial.eq.${query.trim()},codigo_id.eq.${query.trim()}`);
+
+        if (error) throw error;
+
+        if (data.length === 0) {
+          msg.textContent = '⚠️ No se encontró ningún radio con ese número de serie o código ID.';
+          container.style.display = 'none';
+          return;
+        }
+
+        // Mostrar resultados
+        tbody.innerHTML = data.map(r => `
+          <tr>
+            <td>${r.marca || '—'}</td>
+            <td>${r.modelo || '—'}</td>
+            <td>${r.tipo || '—'}</td>
+            <td>${r.serial || '—'}</td>
+            <td>${r.codigo_id || '—'}</td>
+            <td>${r.dependencia || '—'}</td>
+            <td>${getEstadoHTML(r.estado)}</td>
+            <td>${r.observaciones || '—'}</td>
+            <td>${getMotivo(r.estado, r.motivo_inoperativo, r.motivo_extraviado)}</td>
+          </tr>
+        `).join('');
+
+        container.style.display = 'block';
+      } catch (err) {
+        console.error('Error al buscar:', err);
+        msg.textContent = '❌ Error al realizar la búsqueda. Intente más tarde.';
+        container.style.display = 'none';
+      }
+    }
+
+    // Eventos
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const q = document.getElementById('searchInput').value;
+      buscarRadio(q);
+    });
+
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const q = document.getElementById('searchInput').value;
+        buscarRadio(q);
+      }
+    });
+  </script>
+</body>
+</html>
