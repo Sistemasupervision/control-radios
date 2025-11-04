@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modificaciones | Control de Radios</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+    body {
+      background-image: url('fondo.png');
+      background-size: cover;
+      background-position: right top;
+      background-repeat: no-repeat;
+      color: #0d47a1;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(4px);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .header-left {
+      text-align: center;
+      flex: 1;
+    }
+    .logo-img {
+      max-width: 100px;
+      margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0d47a1;
+    }
+    .logout-btn {
+      background: #d32f2f;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      transition: background 0.2s;
+    }
+    .logout-btn:hover {
+      background: #b71c1c;
+    }
+    .panel-btn {
+      background: #1976d2;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: background 0.2s;
+      text-align: center;
+    }
+    .panel-btn:hover {
+      background: #1565c0;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 2px;
+      background: #f0f4f8;
+      padding: 6px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+    }
+    .tab-link {
+      flex: 1;
+      text-align: center;
+      padding: 14px 8px;
+      text-decoration: none;
+      color: #546e7a;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.25s ease;
+    }
+    .tab-link:hover {
+      color: #1976d2;
+      background: #e3f2fd;
+    }
+    .tab-link.active {
+      color: #1976d2;
+      background: white;
+      box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
+    }
+
+    .search-section {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #90a4ae;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+    .search-btn {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 0 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .search-btn:hover {
+      background: #1565c0;
+    }
+
+    .form-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #37474f;
+      font-size: 15px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #90a4ae;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #263238;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #1976d2;
+      box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-save {
+      background: #2e7d32;
+      color: white;
+    }
+    .btn-save:hover {
+      background: #1b5e20;
+    }
+    .btn-delete {
+      background: #d32f2f;
+      color: white;
+    }
+    .btn-delete:hover {
+      background: #b71c1c;
+    }
+    .message {
+      text-align: center;
+      margin-top: 16px;
+      min-height: 24px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .message.success { color: #2e7d32; }
+    .message.error { color: #d32f2f; }
+    .conditional-field {
+      display: none;
+      margin-top: 8px;
+    }
+    .error-text {
+      color: #d32f2f;
+      font-size: 13px;
+      margin-top: 6px;
+      display: none;
+    }
+    .form-control.invalid {
+      border-color: #d32f2f;
+      box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
+    }
+    .no-result {
+      text-align: center;
+      color: #666;
+      margin-top: 24px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
+        <h1>Control de Radios – CPNB</h1>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="panel.html" class="panel-btn">📊 Panel</a>
+        <button class="logout-btn" id="logoutBtn">Salir</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <a href="consulta.html" class="tab-link">🔍 Consulta</a>
+      <a href="registro.html" class="tab-link">➕ Registro</a>
+      <a href="modificaciones.html" class="tab-link active">✏️ Modificaciones</a>
+      <a href="informacion.html" class="tab-link">ℹ️ Información</a>
+    </div>
+
+    <!-- Búsqueda -->
+    <div class="search-section">
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID para modificar...">
+      <button class="search-btn" id="searchBtn">Buscar</button>
+    </div>
+
+    <div class="message" id="message"></div>
+    <div class="no-result" id="noResult" style="display: none;">Ningún radio cargado. Busque uno para editar.</div>
+
+    <!-- Formulario de edición -->
+    <form id="editForm" style="display: none;">
+      <div class="form-container">
+        <input type="hidden" id="radioId">
+
+        <div class="form-group">
+          <label for="marca">Marca *</label>
+          <select id="marca" class="form-control" required>
+            <option value="Motorola">Motorola</option>
+            <option value="Hytera">Hytera</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="modelo">Modelo *</label>
+          <input type="text" id="modelo" class="form-control" placeholder="Ej: MTP850" required maxlength="50">
+        </div>
+
+        <div class="form-group">
+          <label for="tipo">Tipo de Radio *</label>
+          <select id="tipo" class="form-control" required>
+            <option value="Portátil Motorola">Portátil Motorola</option>
+            <option value="Portátil Hytera">Portátil Hytera</option>
+            <option value="Móvil Motorola">Móvil Motorola</option>
+            <option value="Móvil Hytera">Móvil Hytera</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="serial">Número de Serie *</label>
+          <input type="text" id="serial" class="form-control" placeholder="Ej: ABC123456" required maxlength="50">
+          <div id="serial-error" class="error-text"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="codigo_id">Código ID *</label>
+          <input type="text" id="codigo_id" class="form-control" placeholder="Máximo 8 dígitos" required maxlength="8">
+          <div id="codigo-error" class="error-text"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="dependencia">Dependencia</label>
+          <input type="text" id="dependencia" class="form-control" placeholder="Ej: Coordinación Zulia">
+        </div>
+
+        <div class="form-group">
+          <label for="tipo_c">¿Posee Tipo C? *</label>
+          <select id="tipo_c" class="form-control" required>
+            <option value="Sí">Sí</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="observaciones">Observaciones</label>
+          <textarea id="observaciones" class="form-control" rows="2" placeholder="Notas generales..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Estado *</label>
+          <select id="status" class="form-control" required>
+            <option value="Operativo">Operativo</option>
+            <option value="Inoperativo">Inoperativo</option>
+            <option value="Extraviado">Extraviado</option>
+          </select>
+        </div>
+
+        <div id="motivoInoperativo" class="form-group conditional-field">
+          <label for="motivo_inoperativo">Motivo (Inoperativo)</label>
+          <textarea id="motivo_inoperativo" class="form-control" rows="2" placeholder="Ej: Batería dañada"></textarea>
+        </div>
+
+        <div id="motivoExtraviado" class="form-group conditional-field">
+          <label for="motivo_extraviado">Motivo (Extraviado)</label>
+          <textarea id="motivo_extraviado" class="form-control" rows="2" placeholder="Ej: Robo en operativo"></textarea>
+        </div>
+
+        <div class="form-group" style="grid-column: span 2; display: flex; gap: 12px;">
+          <button type="submit" class="btn btn-save">💾 Guardar Cambios</button>
+          <button type="button" class="btn btn-delete" id="deleteBtn">🗑️ Eliminar Radio</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    let currentRadioId = null;
+
+    // Autenticación
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data.user) window.location.href = 'index.html';
+      } catch (err) {
+        window.location.href = 'index.html';
+      }
+    })();
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    const currentPageUrl = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === currentPageUrl);
+    });
+
+    // Mayúsculas en serial
+    document.getElementById('serial').addEventListener('input', () => {
+      document.getElementById('serial').value = document.getElementById('serial').value.toUpperCase();
+    });
+
+    // Solo números en código ID
+    document.getElementById('codigo_id').addEventListener('input', () => {
+      document.getElementById('codigo_id').value = document.getElementById('codigo_id').value.replace(/\D/g, '').slice(0, 8);
+    });
+
+    // Mostrar motivos
+    document.getElementById('status').addEventListener('change', () => {
+      const motivoInop = document.getElementById('motivoInoperativo');
+      const motivoExtr = document.getElementById('motivoExtraviado');
+      const estado = document.getElementById('status').value;
+      motivoInop.style.display = estado === 'Inoperativo' ? 'block' : 'none';
+      motivoExtr.style.display = estado === 'Extraviado' ? 'block' : 'none';
+    });
+
+    // Verificar unicidad (excluyendo el propio registro)
+    async function isUnique(field, value, excludeId) {
+      if (!value) return false;
+      const { data, error } = await supabase
+        .from('radios')
+        .select('id')
+        .eq(field, value)
+        .neq('id', excludeId);
+      return data.length === 0;
+    }
+
+    // Buscar radio
+    async function buscarRadio(query) {
+      const msg = document.getElementById('message');
+      const form = document.getElementById('editForm');
+      const noResult = document.getElementById('noResult');
+
+      if (!query.trim()) {
+        msg.textContent = 'Ingrese un valor para buscar.';
+        form.style.display = 'none';
+        noResult.style.display = 'block';
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('radios')
+          .select('*')
+          .or(`serial.eq.${query.trim()},codigo_id.eq.${query.trim()}`);
+
+        if (error) throw error;
+
+        if (data.length === 0) {
+          msg.textContent = '⚠️ Radio no encontrado.';
+          form.style.display = 'none';
+          noResult.style.display = 'block';
+        } else {
+          const r = data[0];
+          currentRadioId = r.id;
+
+          // Rellenar formulario
+          document.getElementById('radioId').value = r.id;
+          document.getElementById('marca').value = r.marca;
+          document.getElementById('modelo').value = r.modelo;
+          document.getElementById('tipo').value = r.tipo;
+          document.getElementById('serial').value = r.serial;
+          document.getElementById('codigo_id').value = r.codigo_id;
+          document.getElementById('dependencia').value = r.dependencia || '';
+          document.getElementById('tipo_c').value = r.tipo_c || 'No';
+          document.getElementById('observaciones').value = r.observaciones || '';
+          document.getElementById('status').value = r.estado;
+          document.getElementById('motivo_inoperativo').value = r.motivo_inoperativo || '';
+          document.getElementById('motivo_extraviado').value = r.motivo_extraviado || '';
+
+          // Mostrar/Ocultar motivos
+          const motivoInop = document.getElementById('motivoInoperativo');
+          const motivoExtr = document.getElementById('motivoExtraviado');
+          motivoInop.style.display = r.estado === 'Inoperativo' ? 'block' : 'none';
+          motivoExtr.style.display = r.estado === 'Extraviado' ? 'block' : 'none';
+
+          msg.textContent = '';
+          form.style.display = 'block';
+          noResult.style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        msg.textContent = '❌ Error al buscar el radio.';
+        form.style.display = 'none';
+        noResult.style.display = 'block';
+      }
+    }
+
+    // Guardar cambios
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('message');
+
+      const serial = document.getElementById('serial').value.trim();
+      const codigo_id = document.getElementById('codigo_id').value.trim();
+
+      // Validar unicidad
+      const serialOk = await isUnique('serial', serial, currentRadioId);
+      const codigoOk = await isUnique('codigo_id', codigo_id, currentRadioId);
+
+      if (!serialOk) {
+        msg.textContent = '⚠️ El número de serie ya está en uso por otro radio.';
+        return;
+      }
+      if (!codigoOk) {
+        msg.textContent = '⚠️ El Código ID ya está en uso por otro radio.';
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('radios')
+          .update({
+            marca: document.getElementById('marca').value,
+            modelo: document.getElementById('modelo').value,
+            tipo: document.getElementById('tipo').value,
+            serial,
+            codigo_id,
+            dependencia: document.getElementById('dependencia').value || null,
+            tipo_c: document.getElementById('tipo_c').value,
+            observaciones: document.getElementById('observaciones').value || null,
+            estado: document.getElementById('status').value,
+            motivo_inoperativo: document.getElementById('status').value === 'Inoperativo' ? 
+              document.getElementById('motivo_inoperativo').value.trim() || null : null,
+            motivo_extraviado: document.getElementById('status').value === 'Extraviado' ? 
+              document.getElementById('motivo_extraviado').value.trim() || null : null
+          })
+          .eq('id', currentRadioId);
+
+        if (error) throw error;
+
+        msg.textContent = '✅ Cambios guardados exitosamente.';
+        msg.className = 'message success';
+        setTimeout(() => msg.textContent = '', 3000);
+      } catch (err) {
+        console.error('Error al guardar:', err);
+        msg.textContent = '❌ Error al guardar los cambios.';
+        msg.className = 'message error';
+      }
+    });
+
+    // Eliminar
+    document.getElementById('deleteBtn').addEventListener('click', async () => {
+      if (!confirm('¿Está seguro de eliminar este radio? Esta acción no se puede deshacer.')) return;
+
+      const msg = document.getElementById('message');
+      try {
+        const { error } = await supabase
+          .from('radios')
+          .delete()
+          .eq('id', currentRadioId);
+
+        if (error) throw error;
+
+        msg.textContent = '✅ Radio eliminado correctamente.';
+        msg.className = 'message success';
+        document.getElementById('editForm').style.display = 'none';
+        document.getElementById('noResult').style.display = 'block';
+        document.getElementById('searchInput').value = '';
+        currentRadioId = null;
+        setTimeout(() => msg.textContent = '', 3000);
+      } catch (err) {
+        console.error('Error al eliminar:', err);
+        msg.textContent = '❌ No se pudo eliminar el radio.';
+        msg.className = 'message error';
+      }
+    });
+
+    // Eventos de búsqueda
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      buscarRadio(document.getElementById('searchInput').value);
+    });
+
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        buscarRadio(document.getElementById('searchInput').value);
+      }
+    });
+  </script>
+</body>
+</html>
