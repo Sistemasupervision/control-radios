@@ -380,25 +380,28 @@
     }
 
     // Renderizar tarjeta detallada
-    function renderResultCard(radio, targetId = 'resultCard') {
-      const motivo = radio.estado === 'Inoperativo' && radio.motivo_inoperativo ? radio.motivo_inoperativo :
-                     radio.estado === 'Extraviado' && radio.motivo_extraviado ? radio.motivo_extraviado : '—';
+function renderResultCard(radio, targetId = 'resultCard') {
+  const motivo = radio.estado === 'Inoperativo' && radio.motivo_inoperativo ? radio.motivo_inoperativo :
+                 radio.estado === 'Extraviado' && radio.motivo_extraviado ? radio.motivo_extraviado : '—';
 
-      const html = `
-        <div class="card-row"><div class="card-label">Número de Serie:</div><div class="card-value">${radio.serial || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Código ID:</div><div class="card-value">${radio.codigo_id || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Marca:</div><div class="card-value">${radio.marca || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Modelo:</div><div class="card-value">${radio.modelo || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Tipo de Radio:</div><div class="card-value">${radio.tipo || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Dependencia:</div><div class="card-value">${radio.dependencia || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Posee Tipo C:</div><div class="card-value">${getTipoCHTML(radio.tipo_c)}</div></div>
-        <div class="card-row"><div class="card-label">Estado:</div><div class="card-value">${getEstadoHTML(radio.estado)}</div></div>
-        <div class="card-row"><div class="card-label">Observaciones:</div><div class="card-value">${radio.observaciones || '—'}</div></div>
-        <div class="card-row"><div class="card-label">Motivo:</div><div class="card-value">${motivo}</div></div>
-        <div class="card-row"><div class="card-label">Registrado:</div><div class="card-value">${formatDate(radio.created_at)}</div></div>
-      `;
-      document.getElementById(targetId).innerHTML = html;
-    }
+  const editButton = `<div style="margin-top: 16px;"><a href="modificaciones.html?id=${radio.id}" class="panel-btn" style="padding: 8px 16px; font-size: 14px; text-decoration: none;">✏️ Editar Radio</a></div>`;
+
+  const html = `
+    <div class="card-row"><div class="card-label">Número de Serie:</div><div class="card-value">${radio.serial || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Código ID:</div><div class="card-value">${radio.codigo_id || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Marca:</div><div class="card-value">${radio.marca || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Modelo:</div><div class="card-value">${radio.modelo || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Tipo de Radio:</div><div class="card-value">${radio.tipo || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Dependencia:</div><div class="card-value">${radio.dependencia || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Posee Tipo C:</div><div class="card-value">${getTipoCHTML(radio.tipo_c)}</div></div>
+    <div class="card-row"><div class="card-label">Estado:</div><div class="card-value">${getEstadoHTML(radio.estado)}</div></div>
+    <div class="card-row"><div class="card-label">Observaciones:</div><div class="card-value">${radio.observaciones || '—'}</div></div>
+    <div class="card-row"><div class="card-label">Motivo:</div><div class="card-value">${motivo}</div></div>
+    <div class="card-row"><div class="card-label">Registrado:</div><div class="card-value">${formatDate(radio.created_at)}</div></div>
+    ${editButton}
+  `;
+  document.getElementById(targetId).innerHTML = html;
+}
 
     // Renderizar página con eventos de clic
     function renderPage(page) {
