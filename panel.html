@@ -66,21 +66,6 @@
     .logout-btn:hover {
       background: #b71c1c;
     }
-    .panel-btn {
-      background: #1976d2;
-      color: white;
-      text-decoration: none;
-      display: inline-block;
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 15px;
-      transition: background 0.2s;
-      text-align: center;
-    }
-    .panel-btn:hover {
-      background: #1565c0;
-    }
     .tabs {
       display: flex;
       justify-content: center;
@@ -110,7 +95,7 @@
       box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
     }
 
-    /* Estilos para estadísticas */
+    /* Estilos adicionales para estadísticas */
     .stat-card {
       background: #f8fbff;
       padding: 16px;
@@ -127,14 +112,13 @@
         <img src="logo.png" alt="Logo CPNB" class="logo-img" onerror="this.style.display='none'">
         <h1>Control de Radios – CPNB</h1>
       </div>
-      <div style="display: flex; gap: 10px;">
-        <a href="panel.html" class="panel-btn">📊 Panel</a>
-        <button class="logout-btn" id="logoutBtn">Salir</button>
-      </div>
+      <button class="logout-btn" id="logoutBtn">Salir</button>
     </div>
-
     <div class="tabs">
-      <!-- Se llenará dinámicamente -->
+      <a href="consulta.html" class="tab-link active">🔍 Consulta</a>
+      <a href="registro.html" class="tab-link">➕ Registro</a>
+      <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
+      <a href="informacion.html" class="tab-link">ℹ️ Información</a>
     </div>
 
     <!-- Estadísticas dinámicas -->
@@ -173,7 +157,7 @@
             </tr>
           </thead>
           <tbody id="detail-body">
-            <!-- Se llenará con JS -->
+            <!-- Se llenará con JavaScript -->
           </tbody>
         </table>
       </div>
@@ -186,33 +170,22 @@
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    let userRol = 'consultor';
-
-    // Configurar pestañas según rol
-    function configurarPestanas(rol) {
-      const tabsContainer = document.querySelector('.tabs');
-      if (!tabsContainer) return;
-
-      let tabsHTML = '';
-      if (rol === 'administrador') {
-        tabsHTML = `
-          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
-          <a href="registro.html" class="tab-link">➕ Registro</a>
-          <a href="modificaciones.html" class="tab-link">✏️ Modificaciones</a>
-          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
-        `;
-      } else {
-        tabsHTML = `
-          <a href="panel.html" class="tab-link active">📊 Panel</a>
-          <a href="consulta.html" class="tab-link">🔍 Consulta</a>
-          <a href="informacion.html" class="tab-link">ℹ️ Información</a>
-        `;
+    // Verificar autenticación y cargar estadísticas
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data.user) {
+          window.location.href = 'index.html';
+        } else {
+          await cargarEstadisticas();
+        }
+      } catch (err) {
+        console.error('Error de autenticación:', err);
+        window.location.href = 'index.html';
       }
+    })();
 
-      tabsContainer.innerHTML = tabsHTML;
-    }
-
-    // Cargar estadísticas
+    // Función para cargar estadísticas desde Supabase
     async function cargarEstadisticas() {
       const loading = document.getElementById('loading');
       const statsContent = document.getElementById('stats-content');
@@ -220,7 +193,7 @@
       const tbody = document.getElementById('detail-body');
 
       try {
-        const {  radios, error } = await supabase
+        const { data: radios, error } = await supabase
           .from('radios')
           .select('tipo, estado');
 
@@ -265,37 +238,21 @@
       }
     }
 
-    // Verificar autenticación y rol
-    (async () => {
-      try {
-        const {  { user } } = await supabase.auth.getUser();
-        if (!user) {
-          window.location.href = 'index.html';
-          return;
-        }
-
-        const {  perfil, error } = await supabase
-          .from('perfiles')
-          .select('rol')
-          .eq('id', user.id)
-          .single();
-
-        userRol = perfil?.rol || 'consultor';
-        configurarPestanas(userRol);
-
-        // Cargar estadísticas (visibles para todos)
-        await cargarEstadisticas();
-
-      } catch (err) {
-        console.error('Error:', err);
-        window.location.href = 'index.html';
-      }
-    })();
-
-    // Salir
+    // Botón de salir
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
+    });
+
+    // Resaltar pestaña activa
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.tab-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === currentPage) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
     });
   </script>
 </body>
