@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Consulta | Control de Radios</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- SheetJS para exportar a Excel -->
+  <!-- Librería SheetJS para exportar a Excel -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
@@ -122,11 +122,9 @@
       </div>
     </div>
     <!-- Pestañas dinámicas -->
-    <div class="tabs" id="dynamicTabs">
-      <!-- Se llenará con JavaScript -->
-    </div>
-    <!-- ✅ Nuevo botón de exportación -->
-    <button class="export-btn" onclick="exportarAExcel()">📥 Exportar a Excel</button>
+    <div class="tabs" id="dynamicTabs"></div>
+    <!-- ✅ Botón de exportación SIN onclick -->
+    <button class="export-btn" id="exportBtn">📥 Exportar a Excel</button>
     <!-- Búsqueda -->
     <div class="search-section">
       <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
@@ -195,7 +193,7 @@
       tabsContainer.innerHTML = tabsHTML;
     }
 
-    // ✅ Función de exportación a Excel
+    // ✅ Función de exportación
     function exportarAExcel() {
       if (!allRadios || allRadios.length === 0) {
         alert('No hay datos para exportar.');
@@ -206,7 +204,7 @@
         'Código ID': r.codigo_id || '',
         'Marca': r.marca || '',
         'Modelo': r.modelo || '',
-        'Tipo de Radio': r.tipo || '',
+        'Tipo de Radio': r.tipo || '', // Mantiene "Móvil Motorola", etc.
         'Dependencia': r.dependencia || '',
         'Posee Tipo C': r.tipo_c || '',
         'Estado': r.estado || '',
@@ -364,10 +362,10 @@
       }
     }
 
-    // Inicialización
+    // ✅ Inicialización
     (async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {  { user } } = await supabase.auth.getUser();
         if (!user) {
           window.location.href = 'index.html';
           return;
@@ -391,10 +389,13 @@
       }
     })();
 
+    // ✅ Eventos
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
+
+    document.getElementById('exportBtn').addEventListener('click', exportarAExcel);
 
     document.getElementById('prevPage').addEventListener('click', () => {
       if (currentPage > 1) {
