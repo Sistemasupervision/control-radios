@@ -121,11 +121,24 @@
     <div class="tabs" id="dynamicTabs">
       <!-- Se llenará con JS -->
     </div>
- <!-- Botón de exportación (arriba y a la izquierda) -->
-<div style="display: flex; justify-content: flex-start; margin-bottom: 16px;">
+<!-- Botón de exportación + Filtro por tipo -->
+<div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
   <button id="exportExcelBtn" class="search-btn" style="background: #388e3c; padding: 8px 16px; font-size: 14px;">
     📥 Exportar a Excel
   </button>
+  <select id="filtroTipo" class="search-input" style="width: auto; min-width: 180px; padding: 8px 12px; font-size: 14px;">
+    <option value="">— Todos los tipos —</option>
+    <option value="Portátil Motorola">Portátil Motorola</option>
+    <option value="Portátil Hytera">Portátil Hytera</option>
+    <option value="Móvil Motorola">Móvil Motorola</option>
+    <option value="Móvil Hytera">Móvil Hytera</option>
+  </select>
+</div>
+
+<!-- Búsqueda por serial o ID -->
+<div class="search-section">
+  <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
+  <button class="search-btn" id="searchBtn">Buscar</button>
 </div>
 
 <!-- Barra de búsqueda -->
@@ -466,6 +479,77 @@
 
     // Asignar evento al botón de exportación
     document.getElementById('exportExcelBtn').addEventListener('click', exportarRadiosAExcel);
+    // Aplicar filtro por tipo
+function aplicarFiltroPorTipo() {
+  const tipoSeleccionado = document.getElementById('filtroTipo').value;
+  const tbody = document.getElementById('allRadiosBody');
+  const container = document.getElementById('allRadiosContainer');
+  const noRadios = document.getElementById('noRadios');
+
+  if (!allRadios || allRadios.length === 0) return;
+
+  const radiosFiltrados = tipoSeleccionado
+    ? allRadios.filter(r => r.tipo === tipoSeleccionado)
+    : allRadios;
+
+  if (radiosFiltrados.length === 0) {
+    container.style.display = 'none';
+    noRadios.style.display = 'block';
+    noRadios.textContent = 'No hay radios con ese tipo.';
+  } else {
+    allRadios = [...radiosFiltrados]; // ¡Cuidado! Esto sobrescribe `allRadios` → mejor no hacerlo
+    // → En lugar de eso, renderizamos sin cambiar `allRadios` original
+    renderListaFiltrada(radiosFiltrados);
+    container.style.display = 'block';
+    noRadios.style.display = 'none';
+  }
+}
+
+// Nueva función para renderizar una lista filtrada (sin afectar paginación global)
+function renderListaFiltrada(lista) {
+  const ITEMS_PER_PAGE = 10;
+  let pagina = 1;
+  const start = (pagina - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  const pageData = lista.slice(start, end);
+  const totalPages = Math.ceil(lista.length / ITEMS_PER_PAGE);
+
+  const tbody = document.getElementById('allRadiosBody');
+  tbody.innerHTML = pageData.map(r => `
+    <tr data-id="${r.id}">
+      <td><strong>${r.serial || '—'}</strong></td>
+      <td>${r.codigo_id || '—'}</td>
+      <td>${r.tipo.split(' ')[0] || '—'}</td>
+      <td>${r.marca || '—'}</td>
+      <td>${r.modelo || '—'}</td>
+      <td>${(r.dependencia || '').substring(0,12)}${r.dependencia?.length > 12 ? '…' : ''}</td>
+      <td>${r.tipo_c === 'Sí' ? '✅' : '—'}</td>
+      <td>${getEstadoHTML(r.estado)}</td>
+      <td>${formatDate(r.created_at).split(' ')[0]}</td>
+    </tr>
+  `).join('');
+
+  // Reaplicar eventos de clic
+  tbody.querySelectorAll('tr').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = parseInt(row.dataset.id);
+      const radio = lista.find(r => r.id === id);
+      if (radio) {
+        renderResultCard(radio, 'clickedResultCard');
+        document.getElementById('clickedResult').style.display = 'block';
+        document.getElementById('clickedResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Actualizar paginación (opcional: podríamos desactivarla si filtramos)
+  document.getElementById('prevPage').style.display = 'none';
+  document.getElementById('nextPage').style.display = 'none';
+  document.getElementById('pageInfo').textContent = `Mostrando ${lista.length} resultados`;
+}
+
+// Evento al cambiar el filtro
+document.getElementById('filtroTipo').addEventListener('change', aplicarFiltroPorTipo);
   </script>
 </body>
 </html>
