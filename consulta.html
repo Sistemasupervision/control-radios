@@ -121,15 +121,19 @@
     <div class="tabs" id="dynamicTabs">
       <!-- Se llenará con JS -->
     </div>
-    <div class="search-section">
-      <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
-      <button class="search-btn" id="searchBtn">Buscar</button>
-    </div>
-    <div style="text-align: right; margin-bottom: 16px;">
-      <button id="exportExcelBtn" class="search-btn" style="background: #388e3c; padding: 8px 16px; font-size: 14px;">
-        📥 Exportar a Excel
-      </button>
-    </div>
+ <!-- Botón de exportación (arriba y a la izquierda) -->
+<div style="display: flex; justify-content: flex-start; margin-bottom: 16px;">
+  <button id="exportExcelBtn" class="search-btn" style="background: #388e3c; padding: 8px 16px; font-size: 14px;">
+    📥 Exportar a Excel
+  </button>
+</div>
+
+<!-- Barra de búsqueda -->
+<div class="search-section">
+  <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
+  <button class="search-btn" id="searchBtn">Buscar</button>
+</div>
+  
     <div class="message" id="message"></div>
     <div id="searchResult" style="display: none;">
       <div class="section-title">Resultado de la búsqueda</div>
