@@ -59,12 +59,7 @@
     }
     .tab-link:hover { color: #1976d2; background: #e3f2fd; }
     .tab-link.active { color: #1976d2; background: white; box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2); }
-    .search-section {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-      align-items: center;
-    }
+    .search-section { display: flex; gap: 12px; margin-bottom: 24px; }
     .search-input { flex: 1; padding: 12px; border: 1px solid #90a4ae; border-radius: 10px; font-size: 15px; }
     .search-btn {
       background: #1976d2; color: white; border: none; padding: 0 24px;
@@ -118,35 +113,28 @@
         <button class="logout-btn" id="logoutBtn">Salir</button>
       </div>
     </div>
-    <div class="tabs" id="dynamicTabs">
-      <!-- Se llenará con JS -->
+    <div class="tabs" id="dynamicTabs"></div>
+
+    <!-- ✅ Fila de Exportar + Filtro -->
+    <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
+      <button id="exportExcelBtn" class="search-btn" style="background: #388e3c; padding: 8px 16px; font-size: 14px;">
+        📥 Exportar a Excel
+      </button>
+      <select id="filtroTipo" class="search-input" style="width: auto; min-width: 160px; padding: 8px 12px; font-size: 14px;">
+        <option value="">— Filtrar por Tipo —</option>
+        <option value="Portátil Motorola">Portátil Motorola</option>
+        <option value="Portátil Hytera">Portátil Hytera</option>
+        <option value="Móvil Motorola">Móvil Motorola</option>
+        <option value="Móvil Hytera">Móvil Hytera</option>
+      </select>
     </div>
-<!-- Botón de exportación + Filtro por tipo -->
-<div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
-  <button id="exportExcelBtn" class="search-btn" style="background: #388e3c; padding: 8px 16px; font-size: 14px;">
-    📥 Exportar a Excel
-  </button>
-  <select id="filtroTipo" class="search-input" style="width: auto; min-width: 180px; padding: 8px 12px; font-size: 14px;">
-    <option value="">— Todos los tipos —</option>
-    <option value="Portátil Motorola">Portátil Motorola</option>
-    <option value="Portátil Hytera">Portátil Hytera</option>
-    <option value="Móvil Motorola">Móvil Motorola</option>
-    <option value="Móvil Hytera">Móvil Hytera</option>
-  </select>
-</div>
 
-<!-- Búsqueda por serial o ID -->
-<div class="search-section">
-  <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
-  <button class="search-btn" id="searchBtn">Buscar</button>
-</div>
+    <!-- Búsqueda por serial o ID -->
+    <div class="search-section">
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
+      <button class="search-btn" id="searchBtn">Buscar</button>
+    </div>
 
-<!-- Barra de búsqueda -->
-<div class="search-section">
-  <input type="text" id="searchInput" class="search-input" placeholder="Buscar por Número de Serie o Código ID...">
-  <button class="search-btn" id="searchBtn">Buscar</button>
-</div>
-  
     <div class="message" id="message"></div>
     <div id="searchResult" style="display: none;">
       <div class="section-title">Resultado de la búsqueda</div>
@@ -177,12 +165,14 @@
       No hay radios registrados aún.
     </div>
   </div>
+
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabaseUrl = 'https://rgaplyddikcbygzzdpgx.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnYXBseWRkaWtjYnlnenpkcGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDY1MDUsImV4cCI6MjA3NzY4MjUwNX0.G8SXKZm2OjJZSclkMiR8o4p9r0pHhmoN3NU0pLMrVF8';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     let userRol = 'consultor';
+    let allRadiosOriginal = [];
 
     function configurarPestanas(rol) {
       const tabsContainer = document.getElementById('dynamicTabs');
@@ -246,16 +236,18 @@
       document.getElementById(targetId).innerHTML = html;
     }
 
-    let allRadios = [];
-    let currentPage = 1;
+    // === Paginación ===
     const ITEMS_PER_PAGE = 10;
+    let currentPage = 1;
+    let filteredRadios = [];
 
-    function renderPage(page) {
+    function renderPage(page, data) {
       const start = (page - 1) * ITEMS_PER_PAGE;
       const end = start + ITEMS_PER_PAGE;
-      const pageData = allRadios.slice(start, end);
+      const pageData = data.slice(start, end);
       const tbody = document.getElementById('allRadiosBody');
-      const totalPages = Math.ceil(allRadios.length / ITEMS_PER_PAGE);
+      const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+
       tbody.innerHTML = pageData.map(r => `
         <tr data-id="${r.id}">
           <td><strong>${r.serial || '—'}</strong></td>
@@ -273,7 +265,7 @@
       tbody.querySelectorAll('tr').forEach(row => {
         row.addEventListener('click', () => {
           const id = parseInt(row.dataset.id);
-          const radio = allRadios.find(r => r.id === id);
+          const radio = data.find(r => r.id === id);
           if (radio) {
             renderResultCard(radio, 'clickedResultCard');
             document.getElementById('clickedResult').style.display = 'block';
@@ -287,26 +279,17 @@
       document.getElementById('nextPage').disabled = page === totalPages || totalPages === 0;
     }
 
+    // === Cargar todos los radios ===
     async function cargarTodosLosRadios() {
       const loading = document.getElementById('loadingAll');
-      const container = document.getElementById('allRadiosContainer');
-      const noRadios = document.getElementById('noRadios');
       try {
         const { data, error } = await supabase
           .from('radios')
           .select('*')
           .order('created_at', { ascending: false });
         if (error) throw error;
-        allRadios = data;
-        currentPage = 1;
-        if (data.length === 0) {
-          noRadios.style.display = 'block';
-          container.style.display = 'none';
-        } else {
-          noRadios.style.display = 'none';
-          container.style.display = 'block';
-          renderPage(currentPage);
-        }
+        allRadiosOriginal = data;
+        aplicarFiltro(); // Mostrar todos al inicio
         loading.style.display = 'none';
       } catch (err) {
         console.error('Error al cargar radios:', err);
@@ -314,20 +297,45 @@
       }
     }
 
+    // === Aplicar filtro (reutilizable) ===
+    function aplicarFiltro() {
+      const tipo = document.getElementById('filtroTipo').value;
+      filteredRadios = tipo
+        ? allRadiosOriginal.filter(r => r.tipo === tipo)
+        : allRadiosOriginal;
+
+      const container = document.getElementById('allRadiosContainer');
+      const noRadios = document.getElementById('noRadios');
+      if (filteredRadios.length === 0) {
+        container.style.display = 'none';
+        noRadios.style.display = 'block';
+        noRadios.textContent = tipo ? `No hay radios del tipo "${tipo}"` : 'No hay radios registrados.';
+      } else {
+        container.style.display = 'block';
+        noRadios.style.display = 'none';
+        currentPage = 1;
+        renderPage(currentPage, filteredRadios);
+      }
+    }
+
+    // === Búsqueda individual ===
     async function buscarRadio(query) {
       const msg = document.getElementById('message');
       const searchRes = document.getElementById('searchResult');
       const clickedRes = document.getElementById('clickedResult');
       const allRes = document.getElementById('allRadiosContainer');
       const noRadios = document.getElementById('noRadios');
+
       if (!query.trim()) {
+        // Restaurar vista completa
+        document.getElementById('filtroTipo').value = '';
+        aplicarFiltro();
         msg.textContent = '';
         searchRes.style.display = 'none';
         clickedRes.style.display = 'none';
-        allRes.style.display = allRadios.length > 0 ? 'block' : 'none';
-        noRadios.style.display = allRadios.length === 0 ? 'block' : 'none';
         return;
       }
+
       try {
         const { data, error } = await supabase
           .from('radios')
@@ -357,26 +365,22 @@
       }
     }
 
-    // === FUNCIÓN DE EXPORTACIÓN A EXCEL ===
+    // === Exportar a Excel ===
     async function exportarRadiosAExcel() {
       const msg = document.getElementById('message');
       msg.textContent = 'Generando archivo...';
       msg.style.color = '#1976d2';
 
       try {
-        const { data, error } = await supabase
-          .from('radios')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        if (!data || data.length === 0) {
+        // Exportar SOLO los radios visibles (respetando el filtro)
+        const radiosAExportar = filteredRadios.length > 0 ? filteredRadios : allRadiosOriginal;
+        if (radiosAExportar.length === 0) {
           msg.textContent = '⚠️ No hay radios para exportar.';
           setTimeout(() => { msg.textContent = ''; }, 3000);
           return;
         }
 
-        const worksheetData = data.map(radio => {
+        const worksheetData = radiosAExportar.map(radio => {
           const fecha = radio.created_at
             ? new Date(radio.created_at).toLocaleString('es-ES')
             : '—';
@@ -414,7 +418,7 @@
       }
     }
 
-    // === INICIALIZACIÓN ===
+    // === Inicialización ===
     (async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -436,7 +440,7 @@
       }
     })();
 
-    // === EVENTOS ===
+    // === Eventos ===
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'index.html';
@@ -445,15 +449,15 @@
     document.getElementById('prevPage').addEventListener('click', () => {
       if (currentPage > 1) {
         currentPage--;
-        renderPage(currentPage);
+        renderPage(currentPage, filteredRadios);
       }
     });
 
     document.getElementById('nextPage').addEventListener('click', () => {
-      const totalPages = Math.ceil(allRadios.length / ITEMS_PER_PAGE);
+      const totalPages = Math.ceil(filteredRadios.length / ITEMS_PER_PAGE);
       if (currentPage < totalPages) {
         currentPage++;
-        renderPage(currentPage);
+        renderPage(currentPage, filteredRadios);
       }
     });
 
@@ -467,89 +471,8 @@
       }
     });
 
-    document.getElementById('searchInput').addEventListener('input', () => {
-      if (document.getElementById('searchInput').value.trim() === '') {
-        document.getElementById('message').textContent = '';
-        document.getElementById('searchResult').style.display = 'none';
-        document.getElementById('clickedResult').style.display = 'none';
-        document.getElementById('allRadiosContainer').style.display = allRadios.length > 0 ? 'block' : 'none';
-        document.getElementById('noRadios').style.display = allRadios.length === 0 ? 'block' : 'none';
-      }
-    });
-
-    // Asignar evento al botón de exportación
+    document.getElementById('filtroTipo').addEventListener('change', aplicarFiltro);
     document.getElementById('exportExcelBtn').addEventListener('click', exportarRadiosAExcel);
-    // Aplicar filtro por tipo
-function aplicarFiltroPorTipo() {
-  const tipoSeleccionado = document.getElementById('filtroTipo').value;
-  const tbody = document.getElementById('allRadiosBody');
-  const container = document.getElementById('allRadiosContainer');
-  const noRadios = document.getElementById('noRadios');
-
-  if (!allRadios || allRadios.length === 0) return;
-
-  const radiosFiltrados = tipoSeleccionado
-    ? allRadios.filter(r => r.tipo === tipoSeleccionado)
-    : allRadios;
-
-  if (radiosFiltrados.length === 0) {
-    container.style.display = 'none';
-    noRadios.style.display = 'block';
-    noRadios.textContent = 'No hay radios con ese tipo.';
-  } else {
-    allRadios = [...radiosFiltrados]; // ¡Cuidado! Esto sobrescribe `allRadios` → mejor no hacerlo
-    // → En lugar de eso, renderizamos sin cambiar `allRadios` original
-    renderListaFiltrada(radiosFiltrados);
-    container.style.display = 'block';
-    noRadios.style.display = 'none';
-  }
-}
-
-// Nueva función para renderizar una lista filtrada (sin afectar paginación global)
-function renderListaFiltrada(lista) {
-  const ITEMS_PER_PAGE = 10;
-  let pagina = 1;
-  const start = (pagina - 1) * ITEMS_PER_PAGE;
-  const end = start + ITEMS_PER_PAGE;
-  const pageData = lista.slice(start, end);
-  const totalPages = Math.ceil(lista.length / ITEMS_PER_PAGE);
-
-  const tbody = document.getElementById('allRadiosBody');
-  tbody.innerHTML = pageData.map(r => `
-    <tr data-id="${r.id}">
-      <td><strong>${r.serial || '—'}</strong></td>
-      <td>${r.codigo_id || '—'}</td>
-      <td>${r.tipo.split(' ')[0] || '—'}</td>
-      <td>${r.marca || '—'}</td>
-      <td>${r.modelo || '—'}</td>
-      <td>${(r.dependencia || '').substring(0,12)}${r.dependencia?.length > 12 ? '…' : ''}</td>
-      <td>${r.tipo_c === 'Sí' ? '✅' : '—'}</td>
-      <td>${getEstadoHTML(r.estado)}</td>
-      <td>${formatDate(r.created_at).split(' ')[0]}</td>
-    </tr>
-  `).join('');
-
-  // Reaplicar eventos de clic
-  tbody.querySelectorAll('tr').forEach(row => {
-    row.addEventListener('click', () => {
-      const id = parseInt(row.dataset.id);
-      const radio = lista.find(r => r.id === id);
-      if (radio) {
-        renderResultCard(radio, 'clickedResultCard');
-        document.getElementById('clickedResult').style.display = 'block';
-        document.getElementById('clickedResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
-  });
-
-  // Actualizar paginación (opcional: podríamos desactivarla si filtramos)
-  document.getElementById('prevPage').style.display = 'none';
-  document.getElementById('nextPage').style.display = 'none';
-  document.getElementById('pageInfo').textContent = `Mostrando ${lista.length} resultados`;
-}
-
-// Evento al cambiar el filtro
-document.getElementById('filtroTipo').addEventListener('change', aplicarFiltroPorTipo);
   </script>
 </body>
 </html>
