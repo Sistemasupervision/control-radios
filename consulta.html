@@ -121,9 +121,9 @@
         <button class="logout-btn" id="logoutBtn">Salir</button>
       </div>
     </div>
-    <!-- Pestañas dinámicas -->
+    <!-- ✅ Pestañas dinámicas -->
     <div class="tabs" id="dynamicTabs"></div>
-    <!-- Botón de exportación -->
+    <!-- ✅ Botón de exportación (sin onclick en HTML) -->
     <button class="export-btn" id="exportBtn">📥 Exportar a Excel</button>
     <!-- Búsqueda -->
     <div class="search-section">
@@ -193,7 +193,7 @@
       tabsContainer.innerHTML = tabsHTML;
     }
 
-    // ✅ Función de exportación a Excel
+    // ✅ Función de exportación
     function exportarAExcel() {
       if (!allRadios || allRadios.length === 0) {
         alert('No hay datos para exportar.');
@@ -219,7 +219,7 @@
       XLSX.writeFile(workbook, 'radios_cpn_bolivariana.xlsx');
     }
 
-    // --- Funciones de formato y renderizado (sin cambios mayores) ---
+    // --- Funciones de formato y renderizado (sin cambios) ---
     function formatDate(dateStr) {
       if (!dateStr) return '—';
       const d = new Date(dateStr);
@@ -298,11 +298,7 @@
       const noRadios = document.getElementById('noRadios');
       try {
         const {  radiosData } = await supabase.from('radios').select('*').order('created_at', { ascending: false });
-        if (radiosData && radiosData.length > 0) {
-          allRadios = radiosData;
-        } else {
-          allRadios = [];
-        }
+        allRadios = radiosData || [];
         currentPage = 1;
         if (allRadios.length === 0) {
           noRadios.style.display = 'block';
@@ -338,16 +334,17 @@
           .from('radios')
           .select('*')
           .or(`serial.eq.${query.trim()},codigo_id.eq.${query.trim()}`);
-        if (resultados && resultados.length > 0) {
-          msg.textContent = '';
-          renderResultCard(resultados[0]);
-          searchRes.style.display = 'block';
+        const data = resultados || [];
+        if (data.length === 0) {
+          msg.textContent = '⚠️ Radio no encontrado.';
+          searchRes.style.display = 'none';
           clickedRes.style.display = 'none';
           allRes.style.display = 'none';
           noRadios.style.display = 'none';
         } else {
-          msg.textContent = '⚠️ Radio no encontrado.';
-          searchRes.style.display = 'none';
+          msg.textContent = '';
+          renderResultCard(data[0]);
+          searchRes.style.display = 'block';
           clickedRes.style.display = 'none';
           allRes.style.display = 'none';
           noRadios.style.display = 'none';
